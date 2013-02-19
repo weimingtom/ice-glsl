@@ -10,10 +10,11 @@ public interface ShaderBinder<T extends Shader> {
     String COLOR = "a_Color";
     String NORMAL = "a_Normal";
     String TEXTURE_COORD = "a_Texture";
+    String POINT_SIZE = "a_PointSize";
 
-    String M_MATRIX = "u_mMatrix";
-    String M_V_MATRIX = "u_mvMatrix";
-    String M_V_P_MATRIX = "u_mvpMatrix";
+    String M_MATRIX = "u_MMatrix";
+    String M_V_MATRIX = "u_MVMatrix";
+    String M_V_P_MATRIX = "u_MVPMatrix";
 
     void bind(T shader);
 

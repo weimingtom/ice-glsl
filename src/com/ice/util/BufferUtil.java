@@ -5,6 +5,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+import static com.ice.model.Constants.BYTES_PER_FLOAT;
 import static java.nio.ByteBuffer.allocateDirect;
 
 /**
@@ -30,6 +31,12 @@ public class BufferUtil {
         return byteBuffer;
     }
 
+    public static ByteBuffer byteBuffer(int size) {
+        ByteBuffer byteBuffer = allocateDirect(size);
+        byteBuffer.order(ByteOrder.nativeOrder());
+        return byteBuffer;
+    }
+
     public static IntBuffer intBuffer(int size) {
         ByteBuffer byteBuffer = allocateDirect(size * Integer.SIZE / Byte.SIZE);
         byteBuffer.order(ByteOrder.nativeOrder());
@@ -37,7 +44,7 @@ public class BufferUtil {
     }
 
     public static FloatBuffer floatBuffer(int size) {
-        ByteBuffer byteBuffer = allocateDirect(size * Float.SIZE / Byte.SIZE);
+        ByteBuffer byteBuffer = allocateDirect(size * BYTES_PER_FLOAT);
         byteBuffer.order(ByteOrder.nativeOrder());
         return byteBuffer.asFloatBuffer();
     }
