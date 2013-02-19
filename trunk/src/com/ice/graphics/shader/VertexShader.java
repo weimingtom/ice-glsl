@@ -44,4 +44,32 @@ public class VertexShader extends Shader {
         return glGetAttribLocation(attachedProgram.getGlProgram(), name);
     }
 
+    public void uploadAttribute(String name, float... values) {
+        int location = findAttribute(name);
+
+        if (location == -1) {
+            throw new IllegalStateException(name + " not found !");
+        }
+        else {
+            switch (values.length) {
+                case 1:
+                    glVertexAttrib1f(location, values[0]);
+                    break;
+                case 2:
+                    glVertexAttrib2fv(location, values, 0);
+                    break;
+                case 3:
+                    glVertexAttrib3fv(location, values, 0);
+                    break;
+                case 4:
+                    glVertexAttrib4fv(location, values, 0);
+                    break;
+
+                default:
+                    throw new IllegalArgumentException();
+            }
+
+        }
+    }
+
 }

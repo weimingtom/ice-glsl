@@ -72,13 +72,15 @@ public class VBOGeometry extends Geometry {
                 for (Component component : components) {
                     if (!attributeNameMap.containsKey(component.name)) {
                         Log.w(TAG, "transformNames " + component.name + " not in map !");
-                    } else {
+                    }
+                    else {
                         component.name = attributeNameMap.get(component.name);
                     }
                 }
 
                 this.formatDescriptor = transformedDescriptor;
-            } else {
+            }
+            else {
                 this.formatDescriptor = formatDescriptor;
             }
 
@@ -102,7 +104,8 @@ public class VBOGeometry extends Geometry {
                         Log.e(TAG, "attribute " + component.name + " not found in vertex shader ");
                     }
 
-                } else {
+                }
+                else {
                     glVertexAttribPointer(
                             attribute,
                             component.dimension,

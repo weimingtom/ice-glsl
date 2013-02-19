@@ -9,9 +9,9 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import static android.opengl.GLES20.*;
-import static com.ice.model.Constants.BYTE_OF_BYTE;
-import static com.ice.model.Constants.BYTE_OF_FLOAT;
-import static com.ice.model.Constants.BYTE_OF_INT;
+import static com.ice.model.Constants.BYTES_PER_BYTE;
+import static com.ice.model.Constants.BYTES_PER_FLOAT;
+import static com.ice.model.Constants.BYTES_PER_INT;
 
 public class VBO implements GlStateController, GlRes {
 
@@ -56,11 +56,11 @@ public class VBO implements GlStateController, GlRes {
         int bytes = 0;
 
         if (verticesData instanceof ByteBuffer) {
-            bytes = BYTE_OF_BYTE;
+            bytes = BYTES_PER_BYTE;
         } else if (verticesData instanceof IntBuffer) {
-            bytes = BYTE_OF_INT;
+            bytes = BYTES_PER_INT;
         } else if (verticesData instanceof FloatBuffer) {
-            bytes = BYTE_OF_FLOAT;
+            bytes = BYTES_PER_FLOAT;
         }
 
         glBufferData(

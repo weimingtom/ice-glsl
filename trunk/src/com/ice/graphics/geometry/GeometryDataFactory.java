@@ -1,14 +1,17 @@
 package com.ice.graphics.geometry;
 
 import android.graphics.Matrix;
-import android.opengl.GLES20;
 import com.ice.graphics.shader.ShaderBinder;
 import com.ice.model.Point3F;
 import com.ice.util.BufferUtil;
 
 import java.nio.FloatBuffer;
 
+import static android.graphics.Color.*;
+import static android.opengl.GLES20.GL_POINTS;
 import static android.opengl.GLES20.GL_TRIANGLES;
+import static com.ice.graphics.geometry.GeometryData.Descriptor;
+import static com.ice.graphics.shader.ShaderBinder.*;
 
 /**
  * User: jason
@@ -17,10 +20,10 @@ import static android.opengl.GLES20.GL_TRIANGLES;
 public class GeometryDataFactory {
 
     public static GeometryData createTriangleData(float radius) {
-        GeometryData.Descriptor descriptor = new GeometryData.Descriptor(GL_TRIANGLES, 3);
+        Descriptor descriptor = new Descriptor(GL_TRIANGLES, 3);
 
-        descriptor.addComponent(ShaderBinder.POSITION, 3);
-        descriptor.addComponent(ShaderBinder.COLOR, 4);
+        descriptor.addComponent(POSITION, 3);
+        descriptor.addComponent(COLOR, 4);
         descriptor.addComponent(ShaderBinder.TEXTURE_COORD, 2);
         descriptor.addComponent(ShaderBinder.NORMAL, 3, true);
 
@@ -36,10 +39,10 @@ public class GeometryDataFactory {
 
         int[] indices = Cube.indices;
 
-        GeometryData.Descriptor descriptor = new GeometryData.Descriptor(GLES20.GL_TRIANGLES, 6 * 2 * 3);
+        Descriptor descriptor = new Descriptor(GL_TRIANGLES, 6 * 2 * 3);
 
-        descriptor.addComponent(ShaderBinder.POSITION, 3);
-        descriptor.addComponent(ShaderBinder.COLOR, 4);
+        descriptor.addComponent(POSITION, 3);
+        descriptor.addComponent(COLOR, 4);
         descriptor.addComponent(ShaderBinder.NORMAL, 3);
         descriptor.addComponent(ShaderBinder.TEXTURE_COORD, 2);
 
@@ -73,6 +76,30 @@ public class GeometryDataFactory {
         FloatBuffer buffer = BufferUtil.wrap(data);
 
         return new GeometryData(buffer, descriptor);
+    }
+
+    public static GeometryData createPointData(float[] point, int argb, float size) {
+        Point3F point3f = new Point3F(point[0], point[1], point[2]);
+
+        return createPointData(point3f, argb, size);
+    }
+
+    public static GeometryData createPointData(Point3F point, int argb, float size) {
+        Descriptor descriptor = new Descriptor(GL_POINTS, 1);
+        descriptor.addComponent(POSITION, 3);
+        descriptor.addComponent(COLOR, 4);
+        descriptor.addComponent(POINT_SIZE, 1);
+
+        float red = red(argb) / 255f;
+        float green = green(argb) / 255f;
+        float blue = blue(argb) / 255f;
+        float alpha = alpha(argb) / 255f;
+
+        FloatBuffer floatBuffer = BufferUtil.wrap(
+                point.x, point.y, point.z, red, green, blue, alpha, size
+        );
+
+        return new GeometryData(floatBuffer, descriptor);
     }
 
     public static class Triangle {

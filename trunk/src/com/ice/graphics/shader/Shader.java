@@ -111,37 +111,58 @@ public abstract class Shader implements GlStateController {
         return attachedProgram != null && attachedProgram.isActive();
     }
 
-    public void bindUniform(String name, float[] matrix) {
-        int location = getUniformLocation(name);
+    public void uploadUniform(String name, float... values) {
+        int location = findUniform(name);
 
-        if (location == -1) {
+        if (location == -1)
             throw new IllegalStateException(name + " not found !");
-        } else {
-            glUniformMatrix4fv(location, 1, false, matrix, 0);
+
+        switch (values.length) {
+            case 1:
+                glUniform1f(location, values[0]);
+                break;
+            case 2:
+                glUniform2f(location, values[0], values[1]);
+                break;
+            case 3:
+                glUniform3f(location, values[0], values[1], values[2]);
+                break;
+            case 4:
+                glUniform4f(location, values[0], values[1], values[2], values[3]);
+                break;
+            case 16:
+                glUniformMatrix4fv(location, 1, false, values, 0);
+                break;
+            default:
+                throw new IllegalArgumentException();
         }
     }
 
-    public void bindUniform(String name, int x, int y, int z) {
-        int location = getUniformLocation(name);
+    public void uploadUniform(String name, int... values) {
+        int location = findUniform(name);
 
-        if (location == -1) {
+        if (location == -1)
             throw new IllegalStateException(name + " not found !");
-        } else {
-            glUniform3i(location, x, y, z);
+
+        switch (values.length) {
+            case 1:
+                glUniform1i(location, values[0]);
+                break;
+            case 2:
+                glUniform2i(location, values[0], values[1]);
+                break;
+            case 3:
+                glUniform3i(location, values[0], values[1], values[2]);
+                break;
+            case 4:
+                glUniform4i(location, values[0], values[1], values[2], values[3]);
+                break;
+            default:
+                throw new IllegalArgumentException();
         }
     }
 
-    public void bindUniform(String name, float x, float y, float z) {
-        int location = getUniformLocation(name);
-
-        if (location == -1) {
-            throw new IllegalStateException(name + " not found !");
-        } else {
-            glUniform3f(location, x, y, z);
-        }
-    }
-
-    public int getUniformLocation(String name) {
+    public int findUniform(String name) {
         validateProgram();
 
         if (uniforms.containsKey(name)) return uniforms.get(name);
@@ -152,7 +173,6 @@ public abstract class Shader implements GlStateController {
 
         return location;
     }
-
 
     int getGlShader() {
         return glShader;
