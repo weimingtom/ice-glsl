@@ -84,7 +84,7 @@ public class GeometryData {
         public String name;
         public int dimension;
         public int type = GL_FLOAT;
-        public boolean normalized = false;
+        public boolean normalized;
         public int offset;
 
         public Component(String name, int dimension) {

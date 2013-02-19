@@ -25,7 +25,7 @@ public class GeometryDataFactory {
         descriptor.addComponent(POSITION, 3);
         descriptor.addComponent(COLOR, 4);
         descriptor.addComponent(ShaderBinder.TEXTURE_COORD, 2);
-        descriptor.addComponent(ShaderBinder.NORMAL, 3, true);
+        descriptor.addComponent(ShaderBinder.NORMAL, 3);
 
         FloatBuffer data = BufferUtil.wrap(new Triangle(radius).vertexes);
 
@@ -96,7 +96,9 @@ public class GeometryDataFactory {
         float alpha = alpha(argb) / 255f;
 
         FloatBuffer floatBuffer = BufferUtil.wrap(
-                point.x, point.y, point.z, red, green, blue, alpha, size
+                point.x, point.y, point.z,
+                red, green, blue, alpha,
+                size
         );
 
         return new GeometryData(floatBuffer, descriptor);
