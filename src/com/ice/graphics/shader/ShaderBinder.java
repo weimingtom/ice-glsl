@@ -6,7 +6,7 @@ package com.ice.graphics.shader;
  */
 public interface ShaderBinder<T extends Shader> {
 
-    String POSITION = "a_Positions";
+    String POSITION = "a_Position";
     String COLOR = "a_Color";
     String NORMAL = "a_Normal";
     String TEXTURE_COORD = "a_Texture";
