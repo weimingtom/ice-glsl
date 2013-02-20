@@ -39,12 +39,15 @@ public class VBOGeometry extends Geometry {
 
     public VBOGeometry(GeometryData geometryData, VertexShader vertexShader, ShaderBinder<VertexShader> vertexShaderBinder) {
         super(geometryData, vertexShader, vertexShaderBinder);
+
         vbo = new VBO(geometryData.getVertexData());
     }
 
     @Override
     protected void bindGeometryData(GeometryData data) {
         vbo.attach();
+
+
     }
 
     @Override
@@ -72,15 +75,13 @@ public class VBOGeometry extends Geometry {
                 for (Component component : components) {
                     if (!attributeNameMap.containsKey(component.name)) {
                         Log.w(TAG, "transformNames " + component.name + " not in map !");
-                    }
-                    else {
+                    } else {
                         component.name = attributeNameMap.get(component.name);
                     }
                 }
 
                 this.formatDescriptor = transformedDescriptor;
-            }
-            else {
+            } else {
                 this.formatDescriptor = formatDescriptor;
             }
 
@@ -104,8 +105,7 @@ public class VBOGeometry extends Geometry {
                         Log.e(TAG, "attribute " + component.name + " not found in vertex shader ");
                     }
 
-                }
-                else {
+                } else {
                     glVertexAttribPointer(
                             attribute,
                             component.dimension,

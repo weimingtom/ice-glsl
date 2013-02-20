@@ -12,6 +12,8 @@ public class IndexedGeometryData extends GeometryData {
 
     public IndexedGeometryData(Buffer vertexData, Buffer indexData, Descriptor formatDescriptor) {
         super(vertexData, formatDescriptor);
+
+        this.indexData = indexData;
     }
 
     public Buffer getIndexData() {

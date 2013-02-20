@@ -68,6 +68,7 @@ public class VBO extends SafeGlStateController implements GlRes {
                 usage
         );
 
+        prepared = true;
     }
 
     @Override
