@@ -1,7 +1,7 @@
 package com.ice.graphics.geometry;
 
 import android.util.Log;
-import com.ice.graphics.shader.ShaderBinder;
+import com.ice.graphics.shader.FragmentShader;
 import com.ice.graphics.shader.VertexShader;
 
 import java.util.List;
@@ -21,38 +21,42 @@ public class VBOGeometry extends Geometry {
 
     private VBO vbo;
 
-    public VBOGeometry(GeometryData geometryData, VertexShader vertexShader) {
-        this(
-                geometryData,
-                vertexShader,
-                new Binder(geometryData.getFormatDescriptor(), null)
-        );
+    public VBOGeometry(GeometryData data) {
+        this(data, null, null);
     }
 
-    public VBOGeometry(GeometryData geometryData, VertexShader vertexShader, Map<String, String> attributeNameMap) {
-        this(
-                geometryData,
-                vertexShader,
-                new Binder(geometryData.getFormatDescriptor(), attributeNameMap)
-        );
+    public VBOGeometry(GeometryData data, VertexShader vsh) {
+        this(data, vsh, null);
     }
 
-    public VBOGeometry(GeometryData geometryData, VertexShader vertexShader, ShaderBinder<VertexShader> vertexShaderBinder) {
-        super(geometryData, vertexShader, vertexShaderBinder);
+    public VBOGeometry(GeometryData data, VertexShader vsh, FragmentShader fsh) {
+        super(data, vsh, fsh);
 
-        vbo = new VBO(geometryData.getVertexData());
+        vbo = new VBO(data.getVertexData());
+
+        binder(null);
+    }
+
+    public void binder(Map<String, String> attributeNameMap) {
+        setBinder(new EasyBinder(attributeNameMap));
     }
 
     @Override
-    protected void bindGeometryData(GeometryData data) {
+    protected void bindShaderData(GeometryData data, VertexShader vsh, FragmentShader fsh) {
         vbo.attach();
 
+        if (getBinder() == null) {
 
+        }
+
+        super.bindShaderData(data, vsh, fsh);
     }
 
     @Override
-    protected void unbindGeometryData(GeometryData data) {
+    protected void unbindShaderData(GeometryData data, VertexShader vsh, FragmentShader fsh) {
         vbo.detach();
+
+        super.unbindShaderData(data, vsh, fsh);
     }
 
     @Override
@@ -61,16 +65,23 @@ public class VBOGeometry extends Geometry {
         glDrawArrays(formatDescriptor.getMode(), 0, formatDescriptor.getCount());
     }
 
-    public static class Binder implements ShaderBinder<VertexShader> {
+    public class EasyBinder implements Geometry.Binder {
 
         private boolean errorPrinted;
-        private Descriptor formatDescriptor;
+        private Descriptor descriptor;
 
-        public Binder(Descriptor formatDescriptor, Map<String, String> attributeNameMap) {
-            if (attributeNameMap != null) {
-                Descriptor transformedDescriptor = formatDescriptor.deepClone();
+        public EasyBinder() {
+            this(null);
+        }
 
-                List<Component> components = transformedDescriptor.getComponents();
+        public EasyBinder(Map<String, String> attributeNameMap) {
+            descriptor = getGeometryData().getFormatDescriptor();
+
+            if (attributeNameMap != null && attributeNameMap.size() > 0) {
+
+                descriptor = descriptor.deepClone();
+
+                List<Component> components = descriptor.getComponents();
 
                 for (Component component : components) {
                     if (!attributeNameMap.containsKey(component.name)) {
@@ -79,24 +90,20 @@ public class VBOGeometry extends Geometry {
                         component.name = attributeNameMap.get(component.name);
                     }
                 }
-
-                this.formatDescriptor = transformedDescriptor;
-            } else {
-                this.formatDescriptor = formatDescriptor;
             }
 
         }
 
         @Override
-        public void bind(VertexShader shader) {
+        public void bind(GeometryData data, VertexShader vsh, FragmentShader fsh) {
 
-            List<GeometryData.Component> components = formatDescriptor.getComponents();
+            List<GeometryData.Component> components = descriptor.getComponents();
 
             boolean error = false;
 
             for (Component component : components) {
 
-                int attribute = shader.findAttribute(component.name);
+                int attribute = vsh.findAttribute(component.name);
 
                 if (attribute < 0) {
                     error = true;
@@ -111,7 +118,7 @@ public class VBOGeometry extends Geometry {
                             component.dimension,
                             component.type,
                             component.normalized,
-                            formatDescriptor.getStride(),
+                            descriptor.getStride(),
                             component.offset
                     );
 
@@ -120,6 +127,12 @@ public class VBOGeometry extends Geometry {
             }
 
             errorPrinted = error;
+
+        }
+
+        @Override
+        public void unbind(GeometryData data, VertexShader vsh, FragmentShader fsh) {
+
         }
 
     }

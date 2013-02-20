@@ -1,6 +1,6 @@
 package com.ice.graphics.geometry;
 
-import com.ice.graphics.shader.ShaderBinder;
+import com.ice.graphics.shader.FragmentShader;
 import com.ice.graphics.shader.VertexShader;
 
 /**
@@ -9,21 +9,21 @@ import com.ice.graphics.shader.VertexShader;
  */
 public class ArrayGeometry extends Geometry {
 
+    public ArrayGeometry(GeometryData data) {
+        super(data);
+    }
 
-    public ArrayGeometry(GeometryData geometryData, VertexShader vertexShader, ShaderBinder<VertexShader> vertexShaderBinder) {
-        super(geometryData, vertexShader, vertexShaderBinder);
+    public ArrayGeometry(GeometryData data, VertexShader vsh) {
+        super(data, vsh);
+    }
+
+    public ArrayGeometry(GeometryData data, VertexShader vsh, FragmentShader fsh) {
+        super(data, vsh, fsh);
     }
 
     @Override
     public void draw() {
-    }
 
-    @Override
-    protected void bindGeometryData(GeometryData data) {
-    }
-
-    @Override
-    protected void unbindGeometryData(GeometryData data) {
     }
 
 }
