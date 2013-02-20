@@ -3,9 +3,9 @@ package com.ice.animation;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
-import com.ice.graphics.GlStateController;
+import com.ice.graphics.SafeGlStateController;
 
-public abstract class Animation implements GlStateController {
+public abstract class Animation extends SafeGlStateController {
 
     public static final int FOREVER = Integer.MIN_VALUE;
     private static final long NOT_STARTED = 0;
@@ -39,7 +39,7 @@ public abstract class Animation implements GlStateController {
     }
 
     @Override
-    public void attach() {
+    protected void onAttach() {
         if (startTime == NOT_STARTED)
             start();
 
@@ -54,11 +54,9 @@ public abstract class Animation implements GlStateController {
             if (loopTimes > 0) {
                 start();
                 loopTimes--;
-            }
-            else if (loopTimes == FOREVER) {
+            } else if (loopTimes == FOREVER) {
                 start();
-            }
-            else {
+            } else {
                 finished = true;
             }
         }
@@ -67,8 +65,7 @@ public abstract class Animation implements GlStateController {
 
         if (over) {
             normalizedTime = 1.0f;
-        }
-        else {
+        } else {
             if (duration != 0 && currentTime >= startTime + offset) {
                 normalizedTime = ((float) (currentTime - startTime - offset)) / (float) duration;
             }
@@ -83,21 +80,16 @@ public abstract class Animation implements GlStateController {
     }
 
     @Override
-    public void detach() {
+    protected void onDetach() {
         if (attached) {
-            onDetach();
+            //todo
             attached = false;
         }
 
         if (isCompleted()) {
             onComplete();
-
         }
-
-
     }
-
-    protected abstract void onDetach();
 
     public void onComplete() {
 

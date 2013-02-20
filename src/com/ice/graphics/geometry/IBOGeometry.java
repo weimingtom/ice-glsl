@@ -17,15 +17,15 @@ public class IBOGeometry extends VBOGeometry {
     }
 
     @Override
-    public void attach() {
+    protected void bindGeometryData(GeometryData data) {
         ibo.attach();
-        super.attach();
+        super.bindGeometryData(data);
     }
 
     @Override
-    public void detach() {
+    protected void unbindGeometryData(GeometryData data) {
         ibo.detach();
-        super.detach();
+        super.unbindGeometryData(data);
     }
 
     @Override

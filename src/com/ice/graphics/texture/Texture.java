@@ -1,14 +1,14 @@
 package com.ice.graphics.texture;
 
 import com.ice.graphics.GlRes;
-import com.ice.graphics.GlStateController;
+import com.ice.graphics.SafeGlStateController;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static android.opengl.GLES20.*;
 
-public abstract class Texture implements GlStateController, GlRes {
+public abstract class Texture extends SafeGlStateController implements GlRes {
 
     private static int maxSize;
     private static boolean npotSupported;
@@ -40,18 +40,16 @@ public abstract class Texture implements GlStateController, GlRes {
     }
 
     @Override
-    public void attach() {
-
+    protected void onAttach() {
         if (!prepared) {
             prepare();
         } else {
             glBindTexture(GL_TEXTURE_2D, glTexture);
         }
-
     }
 
     @Override
-    public void detach() {
+    protected void onDetach() {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 

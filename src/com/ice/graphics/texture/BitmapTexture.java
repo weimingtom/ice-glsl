@@ -26,8 +26,8 @@ public class BitmapTexture extends Texture {
     }
 
     @Override
-    public void attach() {
-        super.attach();
+    protected void onAttach() {
+        super.onAttach();
 
         if (reload) {
             reload = false;
@@ -40,7 +40,6 @@ public class BitmapTexture extends Texture {
             }
             subProvider = null;
         }
-
     }
 
     @Override

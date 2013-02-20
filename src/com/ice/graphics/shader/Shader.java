@@ -17,14 +17,14 @@ package com.ice.graphics.shader;
 
 import android.util.Log;
 import com.ice.exception.FailException;
-import com.ice.graphics.GlStateController;
+import com.ice.graphics.SafeGlStateController;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static android.opengl.GLES20.*;
 
-public abstract class Shader implements GlStateController {
+public abstract class Shader extends SafeGlStateController {
 
     protected static int attributeCapacity = 8;
     private static final String TAG = "Shader";
@@ -81,21 +81,21 @@ public abstract class Shader implements GlStateController {
     protected abstract int createGlShader();
 
     @Override
-    public void attach() {
+    protected void onAttach() {
         validateProgram();
 
         if (!attachedProgram.isActive()) {
             attachedProgram.attach();
         }
-
     }
 
     @Override
-    public void detach() {
+    protected void onDetach() {
         validateProgram();
 
         attachedProgram.detach();
     }
+
 
     public void onAttachToProgram(Program attachedProgram) {
         this.attachedProgram = attachedProgram;

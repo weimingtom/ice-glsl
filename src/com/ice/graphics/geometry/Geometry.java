@@ -1,7 +1,7 @@
 package com.ice.graphics.geometry;
 
 import com.ice.graphics.CoordinateSystem;
-import com.ice.graphics.GlStateController;
+import com.ice.graphics.SafeGlStateController;
 import com.ice.graphics.shader.FragmentShader;
 import com.ice.graphics.shader.ShaderBinder;
 import com.ice.graphics.shader.VertexShader;
@@ -11,7 +11,7 @@ import com.ice.graphics.texture.Texture;
  * User: jason
  * Date: 13-2-16
  */
-public abstract class Geometry implements GlStateController {
+public abstract class Geometry extends SafeGlStateController {
 
     private CoordinateSystem coordinateSystem;
 
@@ -32,7 +32,7 @@ public abstract class Geometry implements GlStateController {
     }
 
     @Override
-    public void attach() {
+    protected void onAttach() {
         validateState();
 
         bindGeometryData(geometryData);
@@ -46,7 +46,11 @@ public abstract class Geometry implements GlStateController {
         if (fragmentShaderBinder != null) {
             fragmentShaderBinder.bind(fragmentShader);
         }
+    }
 
+    @Override
+    protected void onDetach() {
+        unbindGeometryData(geometryData);
     }
 
     private void validateState() {
@@ -57,11 +61,6 @@ public abstract class Geometry implements GlStateController {
         if (vertexShaderBinder == null) {
             throw new IllegalStateException("Vertex shader binder NULL !");
         }
-    }
-
-    @Override
-    public void detach() {
-        unbindGeometryData(geometryData);
     }
 
     public abstract void draw();
