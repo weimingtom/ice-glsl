@@ -1,7 +1,7 @@
 package com.ice.graphics.geometry;
 
 import com.ice.graphics.GlRes;
-import com.ice.graphics.GlStateController;
+import com.ice.graphics.SafeGlStateController;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -9,11 +9,9 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import static android.opengl.GLES20.*;
-import static com.ice.model.Constants.BYTES_PER_BYTE;
-import static com.ice.model.Constants.BYTES_PER_FLOAT;
-import static com.ice.model.Constants.BYTES_PER_INT;
+import static com.ice.model.Constants.*;
 
-public class VBO implements GlStateController, GlRes {
+public class VBO extends SafeGlStateController implements GlRes {
 
     private int glVBO;
     private int usage;
@@ -30,7 +28,7 @@ public class VBO implements GlStateController, GlRes {
     }
 
     @Override
-    public void attach() {
+    protected void onAttach() {
         if (!prepared) {
             prepare();
         } else {
@@ -39,7 +37,7 @@ public class VBO implements GlStateController, GlRes {
     }
 
     @Override
-    public void detach() {
+    protected void onDetach() {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 

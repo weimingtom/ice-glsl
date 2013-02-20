@@ -1,21 +1,21 @@
 package com.ice.graphics.geometry;
 
-import com.ice.graphics.GlStateController;
+import com.ice.graphics.SafeGlStateController;
 
 /**
  * User: jason
  * Date: 13-2-16
  */
-public class IBO implements GlStateController {
+public class IBO extends SafeGlStateController {
 
     private int type;
 
     @Override
-    public void attach() {
+    protected void onAttach() {
     }
 
     @Override
-    public void detach() {
+    protected void onDetach() {
     }
 
     public int getType() {

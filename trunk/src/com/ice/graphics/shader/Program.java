@@ -2,7 +2,7 @@ package com.ice.graphics.shader;
 
 import com.ice.exception.FailException;
 import com.ice.graphics.GlRes;
-import com.ice.graphics.GlStateController;
+import com.ice.graphics.SafeGlStateController;
 
 import static android.opengl.GLES20.*;
 
@@ -10,7 +10,7 @@ import static android.opengl.GLES20.*;
  * User: jason
  * Date: 13-2-5
  */
-public class Program implements GlStateController, GlRes {
+public class Program extends SafeGlStateController implements GlRes {
 
     public static Program using;
 
@@ -77,7 +77,7 @@ public class Program implements GlStateController, GlRes {
     }
 
     @Override
-    public void attach() {
+    protected void onAttach() {
         if (vertexShader == null || fragmentShader == null) {
             throw new IllegalStateException();
         }
@@ -88,7 +88,7 @@ public class Program implements GlStateController, GlRes {
     }
 
     @Override
-    public void detach() {
+    protected void onDetach() {
         glUseProgram(0);
     }
 
