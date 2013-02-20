@@ -3,7 +3,7 @@ package com.ice.animation;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
-import com.ice.graphics.SafeGlStateController;
+import com.ice.graphics.state_controller.SafeGlStateController;
 
 public abstract class Animation extends SafeGlStateController {
 

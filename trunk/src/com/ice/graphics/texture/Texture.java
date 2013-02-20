@@ -1,7 +1,7 @@
 package com.ice.graphics.texture;
 
 import com.ice.graphics.GlRes;
-import com.ice.graphics.SafeGlStateController;
+import com.ice.graphics.state_controller.SafeGlStateController;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,6 +1,6 @@
 package com.ice.graphics.geometry;
 
-import com.ice.graphics.SafeGlStateController;
+import com.ice.graphics.state_controller.SafeGlStateController;
 
 /**
  * User: jason

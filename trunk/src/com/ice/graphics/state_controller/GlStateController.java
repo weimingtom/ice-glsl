@@ -1,4 +1,4 @@
-package com.ice.graphics;
+package com.ice.graphics.state_controller;
 
 /**
  * User: jason

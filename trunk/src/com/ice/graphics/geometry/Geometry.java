@@ -1,7 +1,7 @@
 package com.ice.graphics.geometry;
 
 import com.ice.graphics.CoordinateSystem;
-import com.ice.graphics.SafeGlStateController;
+import com.ice.graphics.state_controller.SafeGlStateController;
 import com.ice.graphics.shader.FragmentShader;
 import com.ice.graphics.shader.ShaderBinder;
 import com.ice.graphics.shader.VertexShader;

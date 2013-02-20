@@ -2,7 +2,7 @@ package com.ice.graphics.shader;
 
 import com.ice.exception.FailException;
 import com.ice.graphics.GlRes;
-import com.ice.graphics.SafeGlStateController;
+import com.ice.graphics.state_controller.SafeGlStateController;
 
 import static android.opengl.GLES20.*;
 

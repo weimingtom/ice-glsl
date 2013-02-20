@@ -1,4 +1,6 @@
-package com.ice.graphics;
+package com.ice.graphics.state_controller;
+
+import com.ice.graphics.state_controller.GlStateController;
 
 /**
  * User: jason
