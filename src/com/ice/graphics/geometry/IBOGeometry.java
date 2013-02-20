@@ -1,9 +1,7 @@
 package com.ice.graphics.geometry;
 
-import com.ice.graphics.shader.ShaderBinder;
+import com.ice.graphics.shader.FragmentShader;
 import com.ice.graphics.shader.VertexShader;
-
-import java.util.Map;
 
 import static android.opengl.GLES20.glDrawElements;
 
@@ -15,35 +13,30 @@ public class IBOGeometry extends VBOGeometry {
 
     private IBO ibo;
 
-    public IBOGeometry(IndexedGeometryData geometryData, VertexShader vertexShader) {
-        super(geometryData, vertexShader);
-        buildIBO(geometryData);
+    public IBOGeometry(IndexedGeometryData data) {
+        this(data, null);
     }
 
-    public IBOGeometry(IndexedGeometryData geometryData, VertexShader vertexShader, Map<String, String> attributeNameMap) {
-        super(geometryData, vertexShader, attributeNameMap);
-        buildIBO(geometryData);
+    public IBOGeometry(IndexedGeometryData data, VertexShader vsh) {
+        this(data, vsh, null);
     }
 
-    public IBOGeometry(IndexedGeometryData geometryData, VertexShader vertexShader, ShaderBinder<VertexShader> vertexShaderBinder) {
-        super(geometryData, vertexShader, vertexShaderBinder);
-        buildIBO(geometryData);
-    }
+    public IBOGeometry(IndexedGeometryData data, VertexShader vsh, FragmentShader fsh) {
+        super(data, vsh, fsh);
 
-    private void buildIBO(IndexedGeometryData indexedGeometryData) {
-        ibo = new IBO(indexedGeometryData.getIndexData());
+        ibo = new IBO(data.getIndexData());
     }
 
     @Override
-    protected void bindGeometryData(GeometryData data) {
+    protected void bindShaderData(GeometryData data, VertexShader vsh, FragmentShader fsh) {
         ibo.attach();
-        super.bindGeometryData(data);
+        super.bindShaderData(data, vsh, fsh);
     }
 
     @Override
-    protected void unbindGeometryData(GeometryData data) {
+    protected void unbindShaderData(GeometryData data, VertexShader vsh, FragmentShader fsh) {
         ibo.detach();
-        super.unbindGeometryData(data);
+        super.unbindShaderData(data, vsh, fsh);
     }
 
     @Override

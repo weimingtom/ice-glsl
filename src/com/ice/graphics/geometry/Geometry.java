@@ -1,10 +1,9 @@
 package com.ice.graphics.geometry;
 
 import com.ice.graphics.CoordinateSystem;
-import com.ice.graphics.state_controller.SafeGlStateController;
 import com.ice.graphics.shader.FragmentShader;
-import com.ice.graphics.shader.ShaderBinder;
 import com.ice.graphics.shader.VertexShader;
+import com.ice.graphics.state_controller.SafeGlStateController;
 import com.ice.graphics.texture.Texture;
 
 /**
@@ -13,61 +12,68 @@ import com.ice.graphics.texture.Texture;
  */
 public abstract class Geometry extends SafeGlStateController {
 
-    private CoordinateSystem coordinateSystem;
+    public interface Binder {
 
+        void bind(GeometryData data, VertexShader vsh, FragmentShader fsh);
+
+        void unbind(GeometryData data, VertexShader vsh, FragmentShader fsh);
+
+    }
+
+    private Binder binder;
+    private Texture texture;
     private GeometryData geometryData;
     private VertexShader vertexShader;
-    private ShaderBinder<VertexShader> vertexShaderBinder;
-
-    private Texture texture;
     private FragmentShader fragmentShader;
-    private ShaderBinder<FragmentShader> fragmentShaderBinder;
+    private CoordinateSystem coordinateSystem;
 
-    public Geometry(GeometryData geometryData, VertexShader vertexShader, ShaderBinder<VertexShader> vertexShaderBinder) {
-        this.geometryData = geometryData;
-        this.vertexShader = vertexShader;
-        this.vertexShaderBinder = vertexShaderBinder;
+    public Geometry(GeometryData data) {
+        this(data, null, null);
+    }
+
+    public Geometry(GeometryData data, VertexShader vsh) {
+        this(data, vsh, null);
+    }
+
+    public Geometry(GeometryData data, VertexShader vsh, FragmentShader fsh) {
+        this.geometryData = data;
+        this.vertexShader = vsh;
+        this.fragmentShader = fsh;
 
         coordinateSystem = new CoordinateSystem();
     }
 
     @Override
     protected void onAttach() {
-        validateState();
 
-        bindGeometryData(geometryData);
         vertexShader.attach();
-        vertexShaderBinder.bind(vertexShader);
 
         if (texture != null) {
             texture.attach();
         }
 
-        if (fragmentShaderBinder != null) {
-            fragmentShaderBinder.bind(fragmentShader);
-        }
+        bindShaderData(geometryData, vertexShader, fragmentShader);
+
     }
 
     @Override
     protected void onDetach() {
-        unbindGeometryData(geometryData);
-    }
-
-    private void validateState() {
-        if (vertexShader == null) {
-            throw new IllegalStateException("Vertex shader NULL !");
-        }
-
-        if (vertexShaderBinder == null) {
-            throw new IllegalStateException("Vertex shader binder NULL !");
-        }
+        unbindShaderData(geometryData, vertexShader, fragmentShader);
     }
 
     public abstract void draw();
 
-    protected abstract void bindGeometryData(GeometryData data);
+    protected void bindShaderData(GeometryData data, VertexShader vsh, FragmentShader fsh) {
+        if (binder != null) {
+            binder.bind(data, vsh, fsh);
+        }
+    }
 
-    protected abstract void unbindGeometryData(GeometryData data);
+    protected void unbindShaderData(GeometryData data, VertexShader vsh, FragmentShader fsh) {
+        if (binder != null) {
+            binder.unbind(data, vsh, fsh);
+        }
+    }
 
     public float[] selfCoordinateSystem() {
         return coordinateSystem.modelMatrix();
@@ -93,14 +99,6 @@ public abstract class Geometry extends SafeGlStateController {
         this.fragmentShader = fragmentShader;
     }
 
-    public ShaderBinder<FragmentShader> getFragmentShaderBinder() {
-        return fragmentShaderBinder;
-    }
-
-    public void setFragmentShaderBinder(ShaderBinder<FragmentShader> fragmentShaderBinder) {
-        this.fragmentShaderBinder = fragmentShaderBinder;
-    }
-
     public GeometryData getGeometryData() {
         return geometryData;
     }
@@ -117,12 +115,12 @@ public abstract class Geometry extends SafeGlStateController {
         this.vertexShader = vertexShader;
     }
 
-    public ShaderBinder<VertexShader> getVertexShaderBinder() {
-        return vertexShaderBinder;
+    public Binder getBinder() {
+        return binder;
     }
 
-    public void setVertexShaderBinder(ShaderBinder<VertexShader> vertexShaderBinder) {
-        this.vertexShaderBinder = vertexShaderBinder;
+    public void setBinder(Binder binder) {
+        this.binder = binder;
     }
 
 }
