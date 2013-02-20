@@ -57,6 +57,10 @@ public class GeometryData {
             return mode;
         }
 
+        public void setMode(int mode) {
+            this.mode = mode;
+        }
+
         private void update() {
             int offset = 0;
 

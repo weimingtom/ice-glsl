@@ -1,11 +1,9 @@
 package com.ice.util;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
+import java.nio.*;
 
 import static com.ice.model.Constants.BYTES_PER_FLOAT;
+import static com.ice.model.Constants.BYTES_PER_SHORT;
 import static java.nio.ByteBuffer.allocateDirect;
 
 /**
@@ -15,12 +13,21 @@ import static java.nio.ByteBuffer.allocateDirect;
 public class BufferUtil {
 
     public static FloatBuffer wrap(float... data) {
-        ByteBuffer byteBuffer = allocateDirect(data.length * Float.SIZE / Byte.SIZE);
+        ByteBuffer byteBuffer = allocateDirect(data.length * BYTES_PER_FLOAT);
         byteBuffer.order(ByteOrder.nativeOrder());
         FloatBuffer floatBuffer = byteBuffer.asFloatBuffer();
         floatBuffer.put(data);
         floatBuffer.position(0);
         return floatBuffer;
+    }
+
+    public static ShortBuffer wrap(short... data) {
+        ByteBuffer byteBuffer = allocateDirect(data.length * BYTES_PER_SHORT);
+        byteBuffer.order(ByteOrder.nativeOrder());
+        ShortBuffer shortBuffer = byteBuffer.asShortBuffer();
+        shortBuffer.put(data);
+        shortBuffer.position(0);
+        return shortBuffer;
     }
 
     public static ByteBuffer wrap(byte... data) {
