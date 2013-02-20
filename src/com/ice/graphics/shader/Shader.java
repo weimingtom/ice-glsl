@@ -17,7 +17,7 @@ package com.ice.graphics.shader;
 
 import android.util.Log;
 import com.ice.exception.FailException;
-import com.ice.graphics.SafeGlStateController;
+import com.ice.graphics.state_controller.SafeGlStateController;
 
 import java.util.HashMap;
 import java.util.Map;
