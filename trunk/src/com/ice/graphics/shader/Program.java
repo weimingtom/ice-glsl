@@ -60,17 +60,9 @@ public class Program implements GlStateController, GlRes {
         glGetProgramiv(glProgram, GL_LINK_STATUS, link, 0);
 
         if (link[0] == GL_FALSE) {
-            StringBuilder sb = new StringBuilder();
-
             String info = glGetProgramInfoLog(glProgram);
-
-            while (info != null) {
-                sb.append(info);
-                info = glGetProgramInfoLog(glProgram);
-            }
-
             glDeleteProgram(glProgram);
-            throw new FailException("Link failed ! " + sb.toString());
+            throw new FailException("Link failed ! " + info);
         }
 
         // Free up no longer needed shader resources
