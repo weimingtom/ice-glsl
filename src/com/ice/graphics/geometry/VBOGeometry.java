@@ -45,10 +45,6 @@ public class VBOGeometry extends Geometry {
     protected void bindShaderData(GeometryData data, VertexShader vsh, FragmentShader fsh) {
         vbo.attach();
 
-        if (getBinder() == null) {
-
-        }
-
         super.bindShaderData(data, vsh, fsh);
     }
 

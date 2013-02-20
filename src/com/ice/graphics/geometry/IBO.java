@@ -38,11 +38,13 @@ public class IBO extends SafeGlStateController implements GlRes {
             type = GL_UNSIGNED_BYTE;
             size = data.limit();
             Log.i(TAG, "GL_UNSIGNED_BYTE");
-        } else if (data instanceof ShortBuffer) {
+        }
+        else if (data instanceof ShortBuffer) {
             type = GL_UNSIGNED_SHORT;
             size = data.limit() * BYTES_PER_SHORT;
             Log.i(TAG, "GL_UNSIGNED_SHORT");
-        } else {
+        }
+        else {
             throw new IllegalArgumentException();
         }
 
@@ -58,14 +60,15 @@ public class IBO extends SafeGlStateController implements GlRes {
     protected void onAttach() {
         if (!prepared) {
             prepare();
-        } else {
-            glBindBuffer(GL_ARRAY_BUFFER, glIBO);
+        }
+        else {
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glIBO);
         }
     }
 
     @Override
     protected void onDetach() {
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
     @Override
@@ -77,7 +80,6 @@ public class IBO extends SafeGlStateController implements GlRes {
         glIBO = temp[0];
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glIBO);
-
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indicesData, usage);
 
         prepared = true;
