@@ -2,8 +2,7 @@ package com.ice.common;
 
 import android.opengl.GLSurfaceView;
 import android.util.Log;
-import com.ice.graphics.CoordinateSystem;
-import com.ice.graphics.SimpleGlobal;
+import com.ice.graphics.geometry.CoordinateSystem;
 import com.ice.graphics.shader.Shader;
 import com.ice.util.BufferUtil;
 
@@ -24,7 +23,7 @@ public abstract class AbstractRenderer implements GLSurfaceView.Renderer {
     private static final String TAG = "AbstractRenderer";
 
     protected AbstractRenderer() {
-        CoordinateSystem.buildGlobal(new SimpleGlobal());
+        CoordinateSystem.buildGlobal(new CoordinateSystem.SimpleGlobal());
     }
 
     @Override
