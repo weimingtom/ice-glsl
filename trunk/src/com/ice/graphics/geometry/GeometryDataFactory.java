@@ -151,6 +151,12 @@ public class GeometryDataFactory {
      * 9      10     11
      */
     public static class Grid {
+        private static final int[] SUB_INDICES = new int[4];
+
+        private static final int[] ORDERS = {
+                0, 2, 1,
+                3, 1, 2
+        };
 
         /**
          * In order CCW
@@ -164,110 +170,17 @@ public class GeometryDataFactory {
 
             if (maxIndex <= 0) {
                 throw new IllegalArgumentException();
-            } else if (maxIndex <= MAX_UNSIGNED_BYTE_VALUE) {
+            }
+            else if (maxIndex <= MAX_UNSIGNED_BYTE_VALUE) {
                 buffer = byteBuffer(indicesCount);
-            } else if (maxIndex <= MAX_UNSIGNED_SHORT_VALUE) {
+                fillByteIndices(stepX, stepY, (ByteBuffer) buffer);
+            }
+            else if (maxIndex <= MAX_UNSIGNED_SHORT_VALUE) {
                 buffer = shortBuffer(indicesCount);
-            } else {
+                fillShortIndices(stepX, stepY, (ShortBuffer) buffer);
+            }
+            else {
                 throw new IllegalArgumentException("too big index " + maxIndex);
-            }
-
-            boolean isUnsignedShort = buffer instanceof ShortBuffer;
-
-            int[] subIndices = new int[4];
-
-            int[] orders = {
-                    0, 2, 1,
-                    3, 1, 2
-            };
-
-            for (int j = 0; j < stepY; j++) {
-                for (int i = 0; i < stepX; i++) {
-
-                    subIndices[0] = (j + 1) * (stepX + 1) + i;     //0   LeftTop
-                    subIndices[1] = subIndices[0] + 1;             //1   RightTop
-                    subIndices[2] = j * (stepX + 1) + i;           //2   LeftBottom
-                    subIndices[3] = subIndices[2] + 1;             //3   RightBottom
-
-                    if (isUnsignedShort) {
-                        ShortBuffer shortBuffer = (ShortBuffer) buffer;
-                        for (int order : orders) {
-                            shortBuffer.put((short) subIndices[order]);
-                        }
-                    } else {
-                        ByteBuffer byteBuffer = (ByteBuffer) buffer;
-                        for (int order : orders) {
-                            byteBuffer.put((byte) subIndices[order]);
-                        }
-                    }
-
-                }
-
-            }
-
-            buffer.position(0);
-
-            return buffer;
-        }
-
-        /**
-         * In order CCW
-         */
-        public static Buffer stripTrianglesIndices(int stepX, int stepY) {
-            int vertexCount = (stepX + 1) * (stepY + 1);
-            int maxIndex = vertexCount - 1;
-            int indicesCount = vertexCount * 2 - (stepX + 1) * 2 + (stepY - 1) * 2;
-
-            Buffer buffer;
-
-            if (maxIndex <= MAX_UNSIGNED_BYTE_VALUE) {
-                buffer = byteBuffer(indicesCount);
-            } else if (maxIndex <= MAX_UNSIGNED_SHORT_VALUE) {
-                buffer = shortBuffer(indicesCount);
-            } else {
-                throw new IllegalArgumentException("too big index " + maxIndex);
-            }
-
-            boolean isUnsignedShort = buffer instanceof ShortBuffer;
-
-            int upLineStartIndex;
-            int downLineStartIndex;
-
-            for (int i = 0; i < stepY; i++) {
-                upLineStartIndex = i * (stepX + 1);
-                downLineStartIndex = (i + 1) * (stepX + 1);
-
-                for (int j = 0; j <= stepX; j++) {
-                    if (isUnsignedShort) {
-                        ShortBuffer shortBuffer = (ShortBuffer) buffer;
-
-                        if (i != 0 && j == 0) {
-                            shortBuffer.put((short) (upLineStartIndex + j));
-                        }
-
-                        shortBuffer.put((short) (upLineStartIndex + j));
-                        shortBuffer.put((short) (downLineStartIndex + j));
-
-                        if (i != stepY - 1 && j == stepX) {
-                            shortBuffer.put((short) (downLineStartIndex + j));
-                        }
-
-                    } else {
-                        ByteBuffer byteBuffer = (ByteBuffer) buffer;
-
-                        if (i != 0 && j == 0) {
-                            byteBuffer.put((byte) (upLineStartIndex + j));
-                        }
-
-                        byteBuffer.put((byte) (upLineStartIndex + j));
-                        byteBuffer.put((byte) (downLineStartIndex + j));
-
-                        if (i != stepY - 1 && j == stepX) {
-                            byteBuffer.put((byte) (downLineStartIndex + j));
-                        }
-                    }
-                }
-
             }
 
             if (buffer.position() != buffer.capacity()) {
@@ -277,6 +190,129 @@ public class GeometryDataFactory {
             buffer.position(0);
 
             return buffer;
+        }
+
+        private static void fillShortIndices(int stepX, int stepY, ShortBuffer buffer) {
+            for (int j = 0; j < stepY; j++) {
+                for (int i = 0; i < stepX; i++) {
+
+                    SUB_INDICES[0] = (j + 1) * (stepX + 1) + i;     //0   LeftTop
+                    SUB_INDICES[1] = SUB_INDICES[0] + 1;             //1   RightTop
+                    SUB_INDICES[2] = j * (stepX + 1) + i;           //2   LeftBottom
+                    SUB_INDICES[3] = SUB_INDICES[2] + 1;             //3   RightBottom
+
+                    for (int order : ORDERS) {
+                        buffer.put((short) SUB_INDICES[order]);
+                    }
+                }
+            }
+        }
+
+        private static void fillByteIndices(int stepX, int stepY, ByteBuffer buffer) {
+            for (int j = 0; j < stepY; j++) {
+                for (int i = 0; i < stepX; i++) {
+
+                    SUB_INDICES[0] = (j + 1) * (stepX + 1) + i;     //0   LeftTop
+                    SUB_INDICES[1] = SUB_INDICES[0] + 1;             //1   RightTop
+                    SUB_INDICES[2] = j * (stepX + 1) + i;           //2   LeftBottom
+                    SUB_INDICES[3] = SUB_INDICES[2] + 1;             //3   RightBottom
+
+                    for (int order : ORDERS) {
+                        buffer.put((byte) SUB_INDICES[order]);
+                    }
+                }
+            }
+        }
+
+        /**
+         * In order CCW
+         */
+        public static Buffer stripTrianglesIndices(int stepX, int stepY) {
+            int vertexCount = (stepX + 1) * (stepY + 1);
+            int maxIndex = vertexCount - 1;
+            int indicesCount = vertexCount * 2 - (stepX + 1) * 2 + (stepY / 2) * 4;
+
+            Buffer buffer;
+            if (maxIndex <= 0) {
+                throw new IllegalArgumentException();
+            }
+            else if (maxIndex <= MAX_UNSIGNED_BYTE_VALUE) {
+                buffer = byteBuffer(indicesCount);
+                fillByteStripIndices(stepX, stepY, (ByteBuffer) buffer);
+            }
+            else if (maxIndex <= MAX_UNSIGNED_SHORT_VALUE) {
+                buffer = shortBuffer(indicesCount);
+                fillShortStripIndices(stepX, stepY, (ShortBuffer) buffer);
+            }
+            else {
+                throw new IllegalArgumentException("too big index " + maxIndex);
+            }
+
+            if (buffer.position() != buffer.capacity()) {
+                throw new IllegalStateException();
+            }
+
+            buffer.position(0);
+
+            return buffer;
+        }
+
+        private static void fillByteStripIndices(int stepX, int stepY, ByteBuffer buffer) {
+            int upLineStartIndex;
+            int downLineStartIndex;
+
+            for (int i = 0; i < stepY; i++) {
+                upLineStartIndex = i * (stepX + 1);
+                downLineStartIndex = (i + 1) * (stepX + 1);
+
+                if (i % 2 == 0) {
+                    for (int j = 0; j <= stepX; j++) {
+                        buffer.put((byte) (upLineStartIndex + j));
+                        buffer.put((byte) (downLineStartIndex + j));
+                    }
+                }
+                else {
+                    buffer.put((byte) (upLineStartIndex + stepX));
+                    buffer.put((byte) (downLineStartIndex + stepX));
+
+                    for (int j = stepX; j >= 0; j--) {
+                        buffer.put((byte) (downLineStartIndex + j));
+                        buffer.put((byte) (upLineStartIndex + j));
+                    }
+
+                    buffer.put((byte) upLineStartIndex);
+                    buffer.put((byte) downLineStartIndex);
+                }
+            }
+        }
+
+        private static void fillShortStripIndices(int stepX, int stepY, ShortBuffer buffer) {
+            int upLineStartIndex;
+            int downLineStartIndex;
+
+            for (int i = 0; i < stepY; i++) {
+                upLineStartIndex = i * (stepX + 1);
+                downLineStartIndex = (i + 1) * (stepX + 1);
+
+                if (i % 2 == 0) {
+                    for (int j = 0; j <= stepX; j++) {
+                        buffer.put((short) (upLineStartIndex + j));
+                        buffer.put((short) (downLineStartIndex + j));
+                    }
+                }
+                else {
+                    buffer.put((short) (upLineStartIndex + stepX));
+                    buffer.put((short) (downLineStartIndex + stepX));
+
+                    for (int j = stepX; j >= 0; j--) {
+                        buffer.put((short) (downLineStartIndex + j));
+                        buffer.put((short) (upLineStartIndex + j));
+                    }
+
+                    buffer.put((short) upLineStartIndex);
+                    buffer.put((short) downLineStartIndex);
+                }
+            }
         }
 
         private Buffer vertexs;
