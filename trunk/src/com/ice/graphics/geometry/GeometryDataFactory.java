@@ -1,18 +1,24 @@
 package com.ice.graphics.geometry;
 
 import android.graphics.Matrix;
+import android.graphics.PointF;
 import com.ice.graphics.shader.ShaderBinder;
-import com.ice.model.Constants;
 import com.ice.model.Point3F;
 
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
 
 import static android.graphics.Color.*;
-import static android.opengl.GLES20.GL_POINTS;
-import static android.opengl.GLES20.GL_TRIANGLES;
+import static android.opengl.GLES20.*;
 import static com.ice.graphics.geometry.GeometryData.Descriptor;
+import static com.ice.graphics.geometry.GeometryDataFactory.Grid.normalTrianglesIndices;
+import static com.ice.graphics.geometry.GeometryDataFactory.Grid.stripTrianglesIndices;
 import static com.ice.graphics.shader.ShaderBinder.*;
-import static com.ice.util.BufferUtil.wrap;
+import static com.ice.model.Constants.MAX_UNSIGNED_BYTE_VALUE;
+import static com.ice.model.Constants.MAX_UNSIGNED_SHORT_VALUE;
+import static com.ice.util.BufferUtil.*;
 
 /**
  * User: jason
@@ -106,164 +112,211 @@ public class GeometryDataFactory {
     }
 
     public static IndexedGeometryData createGridData(float width, float height, int stepX, int stepY) {
-        int maxIndex = (stepX + 1) * (stepY + 1) - 1;
+        Buffer gridTrianglesIndices = normalTrianglesIndices(stepX, stepY);
 
-        if (maxIndex > Constants.MAX_UNSIGNED_SHORT_VALUE) {
-            throw new IllegalArgumentException("too big index " + maxIndex);
-        }
-
-        int indicesCount = stepX * stepY * (3 + 3);
-
-        Descriptor descriptor = new Descriptor(GL_TRIANGLES, indicesCount);
+        Descriptor descriptor = new Descriptor(GL_TRIANGLES, gridTrianglesIndices.limit());
 
         descriptor.addComponent(POSITION, 3);
         descriptor.addComponent(ShaderBinder.TEXTURE_COORD, 2);
         descriptor.addComponent(ShaderBinder.NORMAL, 3);
 
-        float eachW = width / stepX;
-        float eachH = height / stepY;
+        Buffer gridVertex = new Grid(width, height, stepX, stepY).vertexs;
 
-        float[] vertexes = new float[(stepX + 1) * (stepY + 1) * (3 + 3 + 2)];
-
-        int startIndex = 0;
-
-        for (int j = 0; j < stepY + 1; j++) {
-            for (int i = 0; i < stepX + 1; i++) {
-
-                vertexes[startIndex] = i * eachW;     //x
-                vertexes[startIndex + 1] = j * eachH; //y
-                vertexes[startIndex + 2] = 0;         //z
-
-                vertexes[startIndex + 3] = i / (float) stepX;        //u
-                vertexes[startIndex + 4] = 1 - j / (float) stepY;    //v
-
-                vertexes[startIndex + 5] = 0;        //nx
-                vertexes[startIndex + 6] = 0;        //ny
-                vertexes[startIndex + 7] = 1;        //nz
-
-                startIndex += 8;
-            }
-
-        }
-
-
-        if (maxIndex <= Constants.MAX_UNSIGNED_BYTE_VALUE) {
-            byte[] indices = byteIndices(stepX, stepY, indicesCount);
-
-            //validate(maxIndex, indices);
-
-            return new IndexedGeometryData(wrap(vertexes), wrap(indices), descriptor);
-
-        } else {
-            short[] indices = shortIndices(stepX, stepY, indicesCount);
-
-            //validate(maxIndex, indices);
-
-            return new IndexedGeometryData(wrap(vertexes), wrap(indices), descriptor);
-        }
-
+        return new IndexedGeometryData(gridVertex, gridTrianglesIndices, descriptor);
     }
 
-    private static void validate(int maxIndex, byte[] indices) {
-        if (maxIndex == Constants.MAX_UNSIGNED_BYTE_VALUE) {
+    public static IndexedGeometryData createStripGridData(float width, float height, int stepX, int stepY) {
+        Buffer stripIndices = stripTrianglesIndices(stepX, stepY);
 
-            int max = 0, min = 0;
-            for (byte index : indices) {
-                if (index > max) {
-                    max = index;
-                } else if (index < min) {
-                    min = index;
+        Descriptor descriptor = new Descriptor(GL_TRIANGLE_STRIP, stripIndices.capacity());
+
+        descriptor.addComponent(POSITION, 3);
+        descriptor.addComponent(TEXTURE_COORD, 2);
+        descriptor.addComponent(NORMAL, 3);
+
+        Buffer gridVertex = new Grid(width, height, stepX, stepY).vertexs;
+
+        return new IndexedGeometryData(gridVertex, stripIndices, descriptor);
+    }
+
+    /**
+     * 0       1      2
+     * |-------|------|
+     * |       |      |
+     * 3       4      5
+     * |-------|------|
+     * 6       7      8
+     * |       |      |
+     * |-------|------|
+     * 9      10     11
+     */
+    public static class Grid {
+
+        /**
+         * In order CCW
+         */
+        public static Buffer normalTrianglesIndices(int stepX, int stepY) {
+            int vertexCount = (stepX + 1) * (stepY + 1);
+            int maxIndex = vertexCount - 1;
+            int indicesCount = stepX * stepY * (3 + 3);
+
+            Buffer buffer;
+
+            if (maxIndex <= 0) {
+                throw new IllegalArgumentException();
+            } else if (maxIndex <= MAX_UNSIGNED_BYTE_VALUE) {
+                buffer = byteBuffer(indicesCount);
+            } else if (maxIndex <= MAX_UNSIGNED_SHORT_VALUE) {
+                buffer = shortBuffer(indicesCount);
+            } else {
+                throw new IllegalArgumentException("too big index " + maxIndex);
+            }
+
+            boolean isUnsignedShort = buffer instanceof ShortBuffer;
+
+            int[] subIndices = new int[4];
+
+            int[] orders = {
+                    0, 2, 1,
+                    3, 1, 2
+            };
+
+            for (int j = 0; j < stepY; j++) {
+                for (int i = 0; i < stepX; i++) {
+
+                    subIndices[0] = (j + 1) * (stepX + 1) + i;     //0   LeftTop
+                    subIndices[1] = subIndices[0] + 1;             //1   RightTop
+                    subIndices[2] = j * (stepX + 1) + i;           //2   LeftBottom
+                    subIndices[3] = subIndices[2] + 1;             //3   RightBottom
+
+                    if (isUnsignedShort) {
+                        ShortBuffer shortBuffer = (ShortBuffer) buffer;
+                        for (int order : orders) {
+                            shortBuffer.put((short) subIndices[order]);
+                        }
+                    } else {
+                        ByteBuffer byteBuffer = (ByteBuffer) buffer;
+                        for (int order : orders) {
+                            byteBuffer.put((byte) subIndices[order]);
+                        }
+                    }
+
                 }
+
             }
 
-            System.out.println("max min " + max + " , " + min);
+            buffer.position(0);
 
-            if (max != Byte.MAX_VALUE) {
-                throw new IllegalStateException();
-            }
-
-            if (min != -Byte.MAX_VALUE - 1) {
-                throw new IllegalStateException();
-            }
+            return buffer;
         }
-    }
 
-    private static void validate(int maxIndex, short[] indices) {
-        if (maxIndex == Constants.MAX_UNSIGNED_SHORT_VALUE) {
+        /**
+         * In order CCW
+         */
+        public static Buffer stripTrianglesIndices(int stepX, int stepY) {
+            int vertexCount = (stepX + 1) * (stepY + 1);
+            int maxIndex = vertexCount - 1;
+            int indicesCount = vertexCount * 2 - (stepX + 1) * 2 + (stepY - 1) * 2;
 
-            int max = 0, min = 0;
-            for (short index : indices) {
-                if (index > max) {
-                    max = index;
-                } else if (index < min) {
-                    min = index;
+            Buffer buffer;
+
+            if (maxIndex <= MAX_UNSIGNED_BYTE_VALUE) {
+                buffer = byteBuffer(indicesCount);
+            } else if (maxIndex <= MAX_UNSIGNED_SHORT_VALUE) {
+                buffer = shortBuffer(indicesCount);
+            } else {
+                throw new IllegalArgumentException("too big index " + maxIndex);
+            }
+
+            boolean isUnsignedShort = buffer instanceof ShortBuffer;
+
+            int upLineStartIndex;
+            int downLineStartIndex;
+
+            for (int i = 0; i < stepY; i++) {
+                upLineStartIndex = i * (stepX + 1);
+                downLineStartIndex = (i + 1) * (stepX + 1);
+
+                for (int j = 0; j <= stepX; j++) {
+                    if (isUnsignedShort) {
+                        ShortBuffer shortBuffer = (ShortBuffer) buffer;
+
+                        if (i != 0 && j == 0) {
+                            shortBuffer.put((short) (upLineStartIndex + j));
+                        }
+
+                        shortBuffer.put((short) (upLineStartIndex + j));
+                        shortBuffer.put((short) (downLineStartIndex + j));
+
+                        if (i != stepY - 1 && j == stepX) {
+                            shortBuffer.put((short) (downLineStartIndex + j));
+                        }
+
+                    } else {
+                        ByteBuffer byteBuffer = (ByteBuffer) buffer;
+
+                        if (i != 0 && j == 0) {
+                            byteBuffer.put((byte) (upLineStartIndex + j));
+                        }
+
+                        byteBuffer.put((byte) (upLineStartIndex + j));
+                        byteBuffer.put((byte) (downLineStartIndex + j));
+
+                        if (i != stepY - 1 && j == stepX) {
+                            byteBuffer.put((byte) (downLineStartIndex + j));
+                        }
+                    }
                 }
+
             }
 
-            System.out.println("max min " + max + " , " + min);
-
-            if (max != Short.MAX_VALUE) {
+            if (buffer.position() != buffer.capacity()) {
                 throw new IllegalStateException();
             }
 
-            if (min != -Short.MAX_VALUE - 1) {
-                throw new IllegalStateException();
-            }
+            buffer.position(0);
+
+            return buffer;
         }
-    }
 
-    private static byte[] byteIndices(int stepX, int stepY, int count) {
-        byte[] indices = new byte[count];
+        private Buffer vertexs;
 
-        int index = 0;
+        private Grid(float width, float height, int stepX, int stepY) {
+            float eachW = width / stepX;
+            float eachH = -height / stepY;
 
-        for (byte j = 0; j < stepY; j++) {
-            for (byte i = 0; i < stepX; i++) {
+            int size = (stepX + 1) * (stepY + 1) * (3 + 3 + 2);
 
-                byte indexLeftTop = (byte) ((j + 1) * (stepX + 1) + i);        //0
-                byte indexLeftBottom = (byte) (j * (stepX + 1) + i);           //1
-                byte indexRightBottom = (byte) (indexLeftBottom + 1);          //2
-                byte indexRightTop = (byte) (indexLeftTop + 1);                //3
+            PointF leftTop = new PointF(-width / 2, height / 2);
 
-                //ccw
-                indices[index++] = indexRightTop;    //3
-                indices[index++] = indexLeftTop;     //0
-                indices[index++] = indexRightBottom; //2
+            FloatBuffer buffer = floatBuffer(size);
 
-                indices[index++] = indexLeftBottom;   //1
-                indices[index++] = indexRightBottom;  //2
-                indices[index++] = indexLeftTop;      //0
+            for (int j = 0; j < stepY + 1; j++) {
+                for (int i = 0; i < stepX + 1; i++) {
 
-            }
-        }
-        return indices;
-    }
+                    buffer.put(leftTop.x + i * eachW);     //x
+                    buffer.put(leftTop.y + j * eachH);     //y
+                    buffer.put(0);             //z
 
-    private static short[] shortIndices(int stepX, int stepY, int indexCount) {
-        short[] indices = new short[indexCount];
+                    buffer.put(i / (float) stepX);        //u
+                    buffer.put(j / (float) stepY);        //v
 
-        int index = 0;
-
-        for (short j = 0; j < stepY; j++) {
-            for (short i = 0; i < stepX; i++) {
-
-                short indexLeftTop = (short) ((j + 1) * (stepX + 1) + i);        //0
-                short indexLeftBottom = (short) (j * (stepX + 1) + i);           //1
-                short indexRightBottom = (short) (indexLeftBottom + 1);          //2
-                short indexRightTop = (short) (indexLeftTop + 1);                //3
-
-                //ccw
-                indices[index++] = indexRightTop;    //3
-                indices[index++] = indexLeftTop;     //0
-                indices[index++] = indexRightBottom; //2
-
-                indices[index++] = indexLeftBottom;   //1
-                indices[index++] = indexRightBottom;  //2
-                indices[index++] = indexLeftTop;      //0
+                    buffer.put(0);        //nx
+                    buffer.put(0);        //ny
+                    buffer.put(1);        //nz
+                }
 
             }
+
+            buffer.position(0);
+
+            vertexs = buffer;
         }
-        return indices;
+
+        public Buffer getVertexs() {
+            return vertexs;
+        }
+
     }
 
     public static class Triangle {
@@ -299,7 +352,6 @@ public class GeometryDataFactory {
                     0f, 0f, 1.0f, //normal
             };
         }
-
 
     }
 
