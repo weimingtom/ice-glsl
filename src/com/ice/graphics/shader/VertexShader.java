@@ -1,5 +1,6 @@
 package com.ice.graphics.shader;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static android.opengl.GLES20.*;
@@ -10,8 +11,12 @@ import static android.opengl.GLES20.*;
  */
 public class VertexShader extends Shader {
 
+    private Map<String, Integer> attributes;
+
     public VertexShader(String shaderSrc) {
         super(shaderSrc);
+
+        attributes = new HashMap<String, Integer>();
     }
 
     @Override
@@ -41,34 +46,43 @@ public class VertexShader extends Shader {
 
         validateProgram();
 
-        return glGetAttribLocation(attachedProgram.getGlProgram(), name);
+        if (attributes.containsKey(name)) return attributes.get(name);
+
+        int attribute = glGetAttribLocation(attachedProgram.getGlProgram(), name);
+
+        attributes.put(name, attribute);
+
+        return attribute;
     }
 
     public void uploadAttribute(String name, float... values) {
-        int location = findAttribute(name);
+        int attribute = findAttribute(name);
 
-        if (location == -1) {
+        if (attribute == -1) {
             throw new IllegalStateException(name + " not found !");
+        } else {
+            uploadAttribute(attribute, values);
         }
-        else {
-            switch (values.length) {
-                case 1:
-                    glVertexAttrib1f(location, values[0]);
-                    break;
-                case 2:
-                    glVertexAttrib2fv(location, values, 0);
-                    break;
-                case 3:
-                    glVertexAttrib3fv(location, values, 0);
-                    break;
-                case 4:
-                    glVertexAttrib4fv(location, values, 0);
-                    break;
 
-                default:
-                    throw new IllegalArgumentException();
-            }
+    }
 
+    public void uploadAttribute(int attribute, float... values) {
+        switch (values.length) {
+            case 1:
+                glVertexAttrib1f(attribute, values[0]);
+                break;
+            case 2:
+                glVertexAttrib2fv(attribute, values, 0);
+                break;
+            case 3:
+                glVertexAttrib3fv(attribute, values, 0);
+                break;
+            case 4:
+                glVertexAttrib4fv(attribute, values, 0);
+                break;
+
+            default:
+                throw new IllegalArgumentException();
         }
     }
 
