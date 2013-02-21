@@ -112,26 +112,30 @@ public abstract class Shader extends SafeGlStateController {
     }
 
     public void uploadUniform(String name, float... values) {
-        int location = findUniform(name);
+        int uniform = findUniform(name);
 
-        if (location == -1)
+        if (uniform == -1)
             throw new IllegalStateException(name + " not found !");
 
+        uploadUniform(uniform, values);
+    }
+
+    public void uploadUniform(int uniform, float... values) {
         switch (values.length) {
             case 1:
-                glUniform1f(location, values[0]);
+                glUniform1f(uniform, values[0]);
                 break;
             case 2:
-                glUniform2f(location, values[0], values[1]);
+                glUniform2f(uniform, values[0], values[1]);
                 break;
             case 3:
-                glUniform3f(location, values[0], values[1], values[2]);
+                glUniform3f(uniform, values[0], values[1], values[2]);
                 break;
             case 4:
-                glUniform4f(location, values[0], values[1], values[2], values[3]);
+                glUniform4f(uniform, values[0], values[1], values[2], values[3]);
                 break;
             case 16:
-                glUniformMatrix4fv(location, 1, false, values, 0);
+                glUniformMatrix4fv(uniform, 1, false, values, 0);
                 break;
             default:
                 throw new IllegalArgumentException();
@@ -139,23 +143,27 @@ public abstract class Shader extends SafeGlStateController {
     }
 
     public void uploadUniform(String name, int... values) {
-        int location = findUniform(name);
+        int uniform = findUniform(name);
 
-        if (location == -1)
+        if (uniform == -1)
             throw new IllegalStateException(name + " not found !");
 
+        uploadUniform(uniform, values);
+    }
+
+    public void uploadUniform(int uniform, int... values) {
         switch (values.length) {
             case 1:
-                glUniform1i(location, values[0]);
+                glUniform1i(uniform, values[0]);
                 break;
             case 2:
-                glUniform2i(location, values[0], values[1]);
+                glUniform2i(uniform, values[0], values[1]);
                 break;
             case 3:
-                glUniform3i(location, values[0], values[1], values[2]);
+                glUniform3i(uniform, values[0], values[1], values[2]);
                 break;
             case 4:
-                glUniform4i(location, values[0], values[1], values[2], values[3]);
+                glUniform4i(uniform, values[0], values[1], values[2], values[3]);
                 break;
             default:
                 throw new IllegalArgumentException();
@@ -167,11 +175,11 @@ public abstract class Shader extends SafeGlStateController {
 
         if (uniforms.containsKey(name)) return uniforms.get(name);
 
-        int location = glGetUniformLocation(attachedProgram.getGlProgram(), name);
+        int uniform = glGetUniformLocation(attachedProgram.getGlProgram(), name);
 
-        uniforms.put(name, location);
+        uniforms.put(name, uniform);
 
-        return location;
+        return uniform;
     }
 
     int getGlShader() {

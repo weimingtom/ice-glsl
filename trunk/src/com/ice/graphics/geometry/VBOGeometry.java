@@ -66,17 +66,11 @@ public class VBOGeometry extends Geometry {
         private boolean errorPrinted;
         private Descriptor descriptor;
 
-        public EasyBinder() {
-            this(null);
-        }
-
         public EasyBinder(Map<String, String> attributeNameMap) {
             descriptor = getGeometryData().getFormatDescriptor();
+            descriptor = descriptor.deepClone();
 
             if (attributeNameMap != null && attributeNameMap.size() > 0) {
-
-                descriptor = descriptor.deepClone();
-
                 List<Component> components = descriptor.getComponents();
 
                 for (Component component : components) {
