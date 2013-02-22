@@ -1,6 +1,7 @@
 package com.ice.graphics.geometry;
 
 import android.util.Log;
+import com.ice.graphics.VBO;
 import com.ice.graphics.shader.FragmentShader;
 import com.ice.graphics.shader.VertexShader;
 

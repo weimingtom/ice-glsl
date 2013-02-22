@@ -1,4 +1,4 @@
-package com.ice.graphics.geometry;
+package com.ice.graphics;
 
 import android.util.Log;
 import com.ice.graphics.GlRes;
