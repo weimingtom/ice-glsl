@@ -19,11 +19,13 @@ import static android.opengl.GLU.gluErrorString;
  * Date: 13-2-5
  */
 public abstract class AbstractRenderer implements GLSurfaceView.Renderer {
-
     private static final String TAG = "AbstractRenderer";
+
+    private Fps fps;
 
     protected AbstractRenderer() {
         CoordinateSystem.buildGlobal(new CoordinateSystem.SimpleGlobal());
+        fps = new Fps();
     }
 
     @Override
@@ -46,6 +48,7 @@ public abstract class AbstractRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl) {
+        fps.step();
         onFrame();
         checkError();
     }
@@ -84,6 +87,24 @@ public abstract class AbstractRenderer implements GLSurfaceView.Renderer {
         if (errorCode != GL_NO_ERROR) {
             throw new IllegalStateException(gluErrorString(errorCode));
         }
+    }
+
+    private class Fps {
+        private int fps;
+        private long lastUpdate;
+
+        public void step() {
+            fps++;
+
+            long now = System.currentTimeMillis();
+
+            if (now - lastUpdate > 1000) {
+                System.out.println("fps = " + fps);
+                fps = 0;
+                lastUpdate = now;
+            }
+        }
+
     }
 
 }
