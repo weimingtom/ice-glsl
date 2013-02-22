@@ -1,4 +1,4 @@
-package com.ice.common;
+package com.ice.engine;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;

@@ -1,4 +1,4 @@
-package com.ice.common;
+package com.ice.engine;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -6,29 +6,27 @@ import android.content.Context;
 import android.content.pm.ConfigurationInfo;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
-import android.util.Log;
 
-/**
- * Activity class for example attachedProgram that detects OpenGL ES 2.0.
- */
 public abstract class TestCase extends Activity {
+    private GLSurfaceView glSurfaceView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        init();
+    }
+
+    private void init() {
         if (!supportOpenGLES20()) {
-            Log.e("HelloTriangle", "OpenGL ES 2.0 not supported on device.  Exiting...");
-            finish();
-            return;
+            throw new IllegalStateException("OpenGL ES 2.0 not supported on device !");
         }
 
-        setContentView(mGLSurfaceView = new GLSurfaceView(this));
+        Res.build(this);
 
-        // Tell the surface view we want to create an OpenGL ES 2.0-compatible
-        // context, and set an OpenGL ES 2.0-compatible renderer.
-        mGLSurfaceView.setEGLContextClientVersion(2);
-        mGLSurfaceView.setRenderer(buildRenderer());
+        setContentView(glSurfaceView = new GlslSurfaceView(this));
+
+        glSurfaceView.setRenderer(buildRenderer());
     }
 
     protected abstract GLSurfaceView.Renderer buildRenderer();
@@ -41,15 +39,20 @@ public abstract class TestCase extends Activity {
 
     @Override
     protected void onResume() {
-        mGLSurfaceView.onResume();
+        glSurfaceView.onResume();
         super.onResume();
     }
 
     @Override
     protected void onPause() {
-        mGLSurfaceView.onPause();
+        glSurfaceView.onPause();
         super.onPause();
     }
 
-    private GLSurfaceView mGLSurfaceView;
+    @Override
+    protected void onDestroy() {
+        Res.release();
+        super.onDestroy();
+    }
+
 }
