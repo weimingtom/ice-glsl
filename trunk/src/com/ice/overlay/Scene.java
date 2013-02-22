@@ -7,4 +7,18 @@ package com.ice.overlay;
 public class Scene {
 
 
+    public void onCreate() {
+
+
+    }
+
+    public void onSurfaceChanged(int width, int height) {
+
+
+    }
+
+    public void render() {
+
+
+    }
 }

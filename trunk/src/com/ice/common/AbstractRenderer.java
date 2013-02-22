@@ -34,27 +34,27 @@ public abstract class AbstractRenderer implements GLSurfaceView.Renderer {
 
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-        onCreated(gl, config);
+        onCreated(config);
     }
 
     @Override
     public void onSurfaceChanged(GL10 glUnused, int width, int height) {
         Log.i(TAG, "onSurfaceChanged width =" + width + " height =" + height);
 
-        onChanged(glUnused, width, height);
+        onChanged(width, height);
     }
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        onFrame(gl);
+        onFrame();
         checkError();
     }
 
-    protected abstract void onCreated(GL10 glUnused, EGLConfig config);
+    protected abstract void onCreated(EGLConfig config);
 
-    protected abstract void onChanged(GL10 glUnused, int width, int height);
+    protected abstract void onChanged(int width, int height);
 
-    protected abstract void onFrame(GL10 glUnused);
+    protected abstract void onFrame();
 
     private void printInfo() {
         Log.i(TAG, "GL_RENDERER = " + glGetString(GL_RENDERER));
