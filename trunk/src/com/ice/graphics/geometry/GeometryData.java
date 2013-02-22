@@ -1,8 +1,11 @@
 package com.ice.graphics.geometry;
 
+import android.util.Log;
+
 import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static android.opengl.GLES20.GL_BYTE;
 import static android.opengl.GLES20.GL_FLOAT;
@@ -14,6 +17,8 @@ import static android.opengl.GLES20.GL_FLOAT;
 public class GeometryData {
 
     public static class Descriptor {
+        private static final String TAG = "Descriptor";
+
         private int mode;
         private int count;
         private int stride;
@@ -23,6 +28,28 @@ public class GeometryData {
             this.mode = mode;
             this.count = count;
             components = new ArrayList<Component>();
+        }
+
+        public void namespace(Map<String, String> nameMap) {
+            if (nameMap.size() > 0) {
+
+                for (Component component : components) {
+                    if (!nameMap.containsKey(component.name)) {
+                        Log.w(TAG, "transformNames " + component.name + " not in map !");
+                    } else {
+                        component.name = nameMap.get(component.name);
+                    }
+                }
+            }
+
+        }
+
+        public Descriptor deepNamespace(Map<String, String> nameMap) {
+            Descriptor clone = deepClone();
+
+            clone.namespace(nameMap);
+
+            return clone;
         }
 
         public void addComponent(String name, int dimension) {

@@ -5,7 +5,6 @@ import com.ice.graphics.shader.FragmentShader;
 import com.ice.graphics.shader.VertexShader;
 
 import java.util.List;
-import java.util.Map;
 
 import static android.opengl.GLES20.*;
 import static com.ice.graphics.geometry.GeometryData.Component;
@@ -34,11 +33,9 @@ public class VBOGeometry extends Geometry {
 
         vbo = new VBO(data.getVertexData());
 
-        binder(null);
-    }
-
-    public void binder(Map<String, String> attributeNameMap) {
-        setBinder(new EasyBinder(attributeNameMap));
+        setBinder(
+                new EasyBinder(getGeometryData().getFormatDescriptor())
+        );
     }
 
     @Override
@@ -61,27 +58,13 @@ public class VBOGeometry extends Geometry {
         glDrawArrays(formatDescriptor.getMode(), 0, formatDescriptor.getCount());
     }
 
-    public class EasyBinder implements Geometry.Binder {
+    public static class EasyBinder implements Geometry.Binder {
 
         private boolean errorPrinted;
         private Descriptor descriptor;
 
-        public EasyBinder(Map<String, String> attributeNameMap) {
-            descriptor = getGeometryData().getFormatDescriptor();
-            descriptor = descriptor.deepClone();
-
-            if (attributeNameMap != null && attributeNameMap.size() > 0) {
-                List<Component> components = descriptor.getComponents();
-
-                for (Component component : components) {
-                    if (!attributeNameMap.containsKey(component.name)) {
-                        Log.w(TAG, "transformNames " + component.name + " not in map !");
-                    } else {
-                        component.name = attributeNameMap.get(component.name);
-                    }
-                }
-            }
-
+        public EasyBinder(Descriptor descriptor) {
+            this.descriptor = descriptor;
         }
 
         @Override
