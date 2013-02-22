@@ -52,7 +52,6 @@ public class BitmapTexture extends Texture {
     }
 
     public void postSubData(int xoffset, int yoffset, Bitmap subPixel) {
-        //TODO Warning !   subProvider 的这种处理可能导致按钮的状态不正常
         if (this.subProvider != null) {
 
             Log.w(TAG, "postSubData ignored ! ");
