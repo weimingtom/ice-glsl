@@ -1,6 +1,5 @@
-package com.ice.graphics.geometry;
+package com.ice.graphics;
 
-import com.ice.graphics.GlRes;
 import com.ice.graphics.state_controller.SafeGlStateController;
 
 import java.nio.Buffer;

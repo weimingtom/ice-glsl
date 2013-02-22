@@ -1,5 +1,6 @@
 package com.ice.graphics.geometry;
 
+import com.ice.graphics.IBO;
 import com.ice.graphics.shader.FragmentShader;
 import com.ice.graphics.shader.VertexShader;
 
