@@ -16,8 +16,8 @@ public class Program extends SafeGlStateController implements GlRes {
 
     private int glProgram;
     private boolean linked;
-    private VertexShader vertexShader;
-    private FragmentShader fragmentShader;
+    private VertexShader vsh;
+    private FragmentShader fsh;
 
     public Program() {
         // Create the attachedProgram object
@@ -32,23 +32,23 @@ public class Program extends SafeGlStateController implements GlRes {
         return glProgram;
     }
 
-    public void attachShader(VertexShader vertexShader, FragmentShader fragmentShader) {
-        glAttachShader(glProgram, vertexShader.getGlShader());
-        glAttachShader(glProgram, fragmentShader.getGlShader());
+    public void attachShader(VertexShader vsh, FragmentShader fsh) {
+        glAttachShader(glProgram, vsh.getGlShader());
+        glAttachShader(glProgram, fsh.getGlShader());
 
-        this.vertexShader = vertexShader;
-        this.fragmentShader = fragmentShader;
+        this.vsh = vsh;
+        this.fsh = fsh;
 
-        vertexShader.onAttachToProgram(this);
-        fragmentShader.onAttachToProgram(this);
+        vsh.onAttachToProgram(this);
+        fsh.onAttachToProgram(this);
     }
 
     public VertexShader getVertexShader() {
-        return vertexShader;
+        return vsh;
     }
 
     public FragmentShader getFragmentShader() {
-        return fragmentShader;
+        return fsh;
     }
 
     public void link() {
@@ -66,8 +66,8 @@ public class Program extends SafeGlStateController implements GlRes {
         }
 
         // Free up no longer needed shader resources
-        glDeleteShader(vertexShader.getGlShader());
-        glDeleteShader(fragmentShader.getGlShader());
+        glDeleteShader(vsh.getGlShader());
+        glDeleteShader(fsh.getGlShader());
 
         linked = true;
     }
@@ -78,7 +78,7 @@ public class Program extends SafeGlStateController implements GlRes {
 
     @Override
     protected void onAttach() {
-        if (vertexShader == null || fragmentShader == null) {
+        if (vsh == null || fsh == null) {
             throw new IllegalStateException();
         }
 
