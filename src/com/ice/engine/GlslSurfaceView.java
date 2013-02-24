@@ -22,6 +22,7 @@ public class GlslSurfaceView extends GLSurfaceView {
 
     private void init() {
         setEGLContextClientVersion(2);
+        setDebugFlags(DEBUG_CHECK_GL_ERROR | DEBUG_LOG_GL_CALLS);
     }
 
 }
