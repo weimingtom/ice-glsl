@@ -25,7 +25,6 @@ import java.util.Map;
 import static android.opengl.GLES20.*;
 
 public abstract class Shader extends SafeGlStateController {
-
     protected static int attributeCapacity = 8;
     private static final String TAG = "Shader";
 
@@ -42,8 +41,7 @@ public abstract class Shader extends SafeGlStateController {
 
     private int glShader;
     protected Program attachedProgram;
-
-    private Map<String, Integer> uniforms;
+    private Map<String, Uniform> uniforms;
 
     protected Shader(String shaderSrc) {
         if (shaderSrc == null || shaderSrc.length() == 0) {
@@ -52,7 +50,7 @@ public abstract class Shader extends SafeGlStateController {
 
         this.shaderSrc = shaderSrc;
 
-        uniforms = new HashMap<String, Integer>();
+        uniforms = new HashMap<String, Uniform>();
 
         // Create the shader object
         glShader = createGlShader();
@@ -96,9 +94,14 @@ public abstract class Shader extends SafeGlStateController {
         attachedProgram.detach();
     }
 
-
     public void onAttachToProgram(Program attachedProgram) {
         this.attachedProgram = attachedProgram;
+    }
+
+    public void onProgramLinked(Program program) {
+        if (this.attachedProgram == program) {
+            initUniforms();
+        }
     }
 
     protected void validateProgram() {
@@ -111,79 +114,51 @@ public abstract class Shader extends SafeGlStateController {
         return attachedProgram != null && attachedProgram.isActive();
     }
 
-    public void uploadUniform(String name, float... values) {
-        int uniform = findUniform(name);
-
-        if (uniform == -1)
-            throw new IllegalStateException(name + " not found !");
-
-        uploadUniform(uniform, values);
-    }
-
-    public void uploadUniform(int uniform, float... values) {
-        switch (values.length) {
-            case 1:
-                glUniform1f(uniform, values[0]);
-                break;
-            case 2:
-                glUniform2f(uniform, values[0], values[1]);
-                break;
-            case 3:
-                glUniform3f(uniform, values[0], values[1], values[2]);
-                break;
-            case 4:
-                glUniform4f(uniform, values[0], values[1], values[2], values[3]);
-                break;
-            case 16:
-                glUniformMatrix4fv(uniform, 1, false, values, 0);
-                break;
-            default:
-                throw new IllegalArgumentException();
-        }
-    }
-
-    public void uploadUniform(String name, int... values) {
-        int uniform = findUniform(name);
-
-        if (uniform == -1)
-            throw new IllegalStateException(name + " not found !");
-
-        uploadUniform(uniform, values);
-    }
-
-    public void uploadUniform(int uniform, int... values) {
-        switch (values.length) {
-            case 1:
-                glUniform1i(uniform, values[0]);
-                break;
-            case 2:
-                glUniform2i(uniform, values[0], values[1]);
-                break;
-            case 3:
-                glUniform3i(uniform, values[0], values[1], values[2]);
-                break;
-            case 4:
-                glUniform4i(uniform, values[0], values[1], values[2], values[3]);
-                break;
-            default:
-                throw new IllegalArgumentException();
-        }
-    }
-
-    public int findUniform(String name) {
+    public Uniform findUniform(String name) {
         validateProgram();
 
-        if (uniforms.containsKey(name)) return uniforms.get(name);
-
-        int uniform = glGetUniformLocation(attachedProgram.getGlProgram(), name);
-
-        uniforms.put(name, uniform);
-
-        return uniform;
+        return uniforms.get(name);
     }
 
     int getGlShader() {
         return glShader;
+    }
+
+    private void initUniforms() {
+        uniforms.clear();
+
+        int[] activeUniformSize = new int[1];
+
+        int glProgram = attachedProgram.getGlProgram();
+
+        glGetProgramiv(glProgram, GL_ACTIVE_UNIFORMS, activeUniformSize, 0);
+
+        int[] lengthContainer = new int[1];
+        int[] sizeContainer = new int[1];
+        int[] typeContainer = new int[1];
+        int nameContainerSize = 64;
+        byte[] nameContainer = new byte[nameContainerSize];
+
+        for (int glUniform = 0; glUniform < activeUniformSize[0]; glUniform++) {
+            glGetActiveUniform(glProgram, glUniform, nameContainerSize, lengthContainer, 0, sizeContainer, 0, typeContainer, 0, nameContainer, 0);
+
+            int length = lengthContainer[0];
+
+            String name = new String(nameContainer, 0, length);
+
+            uniforms.put(
+                    name,
+                    new Uniform(glUniform, name, typeContainer[0])
+            );
+        }
+    }
+
+    public void uploadUniform(String name, float... values) {
+        findUniform(name).upload(values);
+    }
+
+    public void uploadUniform(String name, int... values) {
+        findUniform(name).upload(values);
     }
 
 }

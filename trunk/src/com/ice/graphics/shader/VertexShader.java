@@ -11,17 +11,56 @@ import static android.opengl.GLES20.*;
  */
 public class VertexShader extends Shader {
 
-    private Map<String, Integer> attributes;
+    private Map<String, Attribute> attributes;
 
     public VertexShader(String shaderSrc) {
         super(shaderSrc);
 
-        attributes = new HashMap<String, Integer>();
+        attributes = new HashMap<String, Attribute>();
     }
 
     @Override
     protected int createGlShader() {
         return glCreateShader(GL_VERTEX_SHADER);
+    }
+
+    @Override
+    public void onProgramLinked(Program program) {
+        super.onProgramLinked(program);
+
+        if (this.attachedProgram == program) {
+            initAttributes();
+        }
+
+    }
+
+    private void initAttributes() {
+        attributes.clear();
+
+        int[] activeAttributeSize = new int[1];
+
+        int glProgram = attachedProgram.getGlProgram();
+
+        glGetProgramiv(glProgram, GL_ACTIVE_ATTRIBUTES, activeAttributeSize, 0);
+
+        int[] lengthContainer = new int[1];
+        int[] sizeContainer = new int[1];
+        int[] typeContainer = new int[1];
+        int nameContainerSize = 64;
+        byte[] nameContainer = new byte[nameContainerSize];
+
+        for (int glAttribute = 0; glAttribute < activeAttributeSize[0]; glAttribute++) {
+            glGetActiveAttrib(glProgram, glAttribute, nameContainerSize, lengthContainer, 0, sizeContainer, 0, typeContainer, 0, nameContainer, 0);
+
+            int length = lengthContainer[0];
+
+            String name = new String(nameContainer, 0, length);
+
+            attributes.put(
+                    name,
+                    new Attribute(glAttribute, name, typeContainer[0])
+            );
+        }
     }
 
     public void preBindAttribute(Map<String, Integer> preBindAttributes) {
@@ -41,49 +80,20 @@ public class VertexShader extends Shader {
 
     }
 
-    public int findAttribute(String name) {
-        if (name == null) throw new IllegalArgumentException();
-
+    public Attribute findAttribute(String name) {
         validateProgram();
 
-        if (attributes.containsKey(name)) return attributes.get(name);
-
-        int attribute = glGetAttribLocation(attachedProgram.getGlProgram(), name);
-
-        attributes.put(name, attribute);
-
-        return attribute;
+        return attributes.get(name);
     }
 
     public void uploadAttribute(String name, float... values) {
-        int attribute = findAttribute(name);
+        Attribute attribute = findAttribute(name);
 
-        if (attribute == -1) {
-            throw new IllegalStateException(name + " not found !");
-        } else {
-            uploadAttribute(attribute, values);
+        if (attribute == null) {
+            throw new IllegalAccessError("Attribute " + name + " not exist !");
         }
 
-    }
-
-    public void uploadAttribute(int attribute, float... values) {
-        switch (values.length) {
-            case 1:
-                glVertexAttrib1f(attribute, values[0]);
-                break;
-            case 2:
-                glVertexAttrib2fv(attribute, values, 0);
-                break;
-            case 3:
-                glVertexAttrib3fv(attribute, values, 0);
-                break;
-            case 4:
-                glVertexAttrib4fv(attribute, values, 0);
-                break;
-
-            default:
-                throw new IllegalArgumentException();
-        }
+        attribute.upload(values);
     }
 
 }

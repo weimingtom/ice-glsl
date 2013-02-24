@@ -2,12 +2,13 @@ package com.ice.graphics.geometry;
 
 import android.util.Log;
 import com.ice.graphics.VBO;
+import com.ice.graphics.shader.Attribute;
 import com.ice.graphics.shader.FragmentShader;
 import com.ice.graphics.shader.VertexShader;
 
 import java.util.List;
 
-import static android.opengl.GLES20.*;
+import static android.opengl.GLES20.glDrawArrays;
 import static com.ice.graphics.geometry.GeometryData.Component;
 import static com.ice.graphics.geometry.GeometryData.Descriptor;
 
@@ -77,18 +78,19 @@ public class VBOGeometry extends Geometry {
 
             for (Component component : components) {
 
-                int attribute = vsh.findAttribute(component.name);
+                Attribute attribute = vsh.findAttribute(component.name);
 
-                if (attribute < 0) {
+                if (attribute == null) {
                     error = true;
 
                     if (!errorPrinted) {
                         Log.e(TAG, "attribute " + component.name + " not found in vertex shader ");
                     }
 
-                } else {
-                    glVertexAttribPointer(
-                            attribute,
+                }
+                else {
+
+                    attribute.pointer(
                             component.dimension,
                             component.type,
                             component.normalized,
@@ -96,7 +98,7 @@ public class VBOGeometry extends Geometry {
                             component.offset
                     );
 
-                    glEnableVertexAttribArray(attribute);
+
                 }
             }
 

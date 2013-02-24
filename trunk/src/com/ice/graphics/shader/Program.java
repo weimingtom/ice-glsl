@@ -69,6 +69,9 @@ public class Program extends SafeGlStateController implements GlRes {
         glDeleteShader(vsh.getGlShader());
         glDeleteShader(fsh.getGlShader());
 
+        vsh.onProgramLinked(this);
+        fsh.onProgramLinked(this);
+
         linked = true;
     }
 
