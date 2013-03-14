@@ -71,6 +71,11 @@ public class VBO extends SafeGlStateController implements GlRes {
     }
 
     @Override
+    public int glRes() {
+        return glVBO;
+    }
+
+    @Override
     public void release() {
         if (glIsBuffer(glVBO)) {
             glDeleteBuffers(1, new int[]{glVBO}, 0);

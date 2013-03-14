@@ -17,6 +17,7 @@ package com.ice.graphics.shader;
 
 import android.util.Log;
 import com.ice.exception.FailException;
+import com.ice.graphics.GlRes;
 import com.ice.graphics.state_controller.SafeGlStateController;
 
 import java.util.HashMap;
@@ -24,7 +25,7 @@ import java.util.Map;
 
 import static android.opengl.GLES20.*;
 
-public abstract class Shader extends SafeGlStateController {
+public abstract class Shader extends SafeGlStateController implements GlRes {
     protected static int attributeCapacity = 8;
     private static final String TAG = "Shader";
 
@@ -74,6 +75,23 @@ public abstract class Shader extends SafeGlStateController {
             glDeleteShader(glShader);
             throw new FailException("Compile failed ! " + log);
         }
+    }
+
+    @Override
+    public void prepare() {
+    }
+
+    @Override
+    public int glRes() {
+        return 0;
+    }
+
+    @Override
+    public void release() {
+    }
+
+    @Override
+    public void onEGLContextLost() {
     }
 
     protected abstract int createGlShader();

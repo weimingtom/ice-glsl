@@ -1,7 +1,6 @@
 package com.ice.graphics;
 
 import android.util.Log;
-import com.ice.graphics.GlRes;
 import com.ice.graphics.state_controller.SafeGlStateController;
 
 import java.nio.Buffer;
@@ -83,6 +82,11 @@ public class IBO extends SafeGlStateController implements GlRes {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indicesData, usage);
 
         prepared = true;
+    }
+
+    @Override
+    public int glRes() {
+        return glIBO;
     }
 
     @Override
