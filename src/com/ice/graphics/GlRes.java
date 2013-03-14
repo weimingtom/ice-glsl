@@ -12,6 +12,8 @@ public interface GlRes {
 
     //void recycle(GL10 gl);
 
+    int glRes();
+
     void release();
 
     void onEGLContextLost();

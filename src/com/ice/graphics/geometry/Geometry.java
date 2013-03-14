@@ -58,6 +58,10 @@ public abstract class Geometry extends SafeGlStateController {
     @Override
     protected void onDetach() {
         unbindShaderData(geometryData, vertexShader, fragmentShader);
+
+        if (texture != null) {
+            texture.detach();
+        }
     }
 
     public abstract void draw();

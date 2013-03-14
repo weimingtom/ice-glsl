@@ -40,12 +40,16 @@ public abstract class Texture extends SafeGlStateController implements GlRes {
     }
 
     @Override
+    public int glRes() {
+        return glTexture;
+    }
+
+    @Override
     protected void onAttach() {
-        if (!prepared) {
+        if (!prepared)
             prepare();
-        } else {
-            glBindTexture(GL_TEXTURE_2D, glTexture);
-        }
+
+        glBindTexture(GL_TEXTURE_2D, glTexture);
     }
 
     @Override
@@ -60,7 +64,7 @@ public abstract class Texture extends SafeGlStateController implements GlRes {
 
     @Override
     public void prepare() {
-
+        if (prepared) return;
 
         int[] temp = new int[1];
         glGenTextures(1, temp, 0);
@@ -83,11 +87,11 @@ public abstract class Texture extends SafeGlStateController implements GlRes {
 
     @Override
     public void release() {
-        if (!prepared) return;
-
-        glDeleteTextures(1, new int[]{glTexture}, 0);
-        prepared = false;
-        glTexture = -1;
+        if (prepared) {
+            glDeleteTextures(1, new int[]{glTexture}, 0);
+            prepared = false;
+            glTexture = -1;
+        }
     }
 
     protected abstract void onLoadTextureData();
@@ -102,7 +106,7 @@ public abstract class Texture extends SafeGlStateController implements GlRes {
         }
     }
 
-    private int glTexture;
+    protected int glTexture;
     private Params params;
 
     public static class Params {

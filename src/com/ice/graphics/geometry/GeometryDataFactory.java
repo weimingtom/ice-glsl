@@ -145,10 +145,10 @@ public class GeometryDataFactory {
      * |       |      |
      * 3       4      5
      * |-------|------|
-     * 6       7      8
+     * |       |      |
      * |       |      |
      * |-------|------|
-     * 9      10     11
+     * 6       7      8
      */
     public static class Grid {
         private static final int[] SUB_INDICES = new int[4];
@@ -170,16 +170,13 @@ public class GeometryDataFactory {
 
             if (maxIndex <= 0) {
                 throw new IllegalArgumentException();
-            }
-            else if (maxIndex <= MAX_UNSIGNED_BYTE_VALUE) {
+            } else if (maxIndex <= MAX_UNSIGNED_BYTE_VALUE) {
                 buffer = byteBuffer(indicesCount);
                 fillByteIndices(stepX, stepY, (ByteBuffer) buffer);
-            }
-            else if (maxIndex <= MAX_UNSIGNED_SHORT_VALUE) {
+            } else if (maxIndex <= MAX_UNSIGNED_SHORT_VALUE) {
                 buffer = shortBuffer(indicesCount);
                 fillShortIndices(stepX, stepY, (ShortBuffer) buffer);
-            }
-            else {
+            } else {
                 throw new IllegalArgumentException("too big index " + maxIndex);
             }
 
@@ -235,16 +232,13 @@ public class GeometryDataFactory {
             Buffer buffer;
             if (maxIndex <= 0) {
                 throw new IllegalArgumentException();
-            }
-            else if (maxIndex <= MAX_UNSIGNED_BYTE_VALUE) {
+            } else if (maxIndex <= MAX_UNSIGNED_BYTE_VALUE) {
                 buffer = byteBuffer(indicesCount);
                 fillByteStripIndices(stepX, stepY, (ByteBuffer) buffer);
-            }
-            else if (maxIndex <= MAX_UNSIGNED_SHORT_VALUE) {
+            } else if (maxIndex <= MAX_UNSIGNED_SHORT_VALUE) {
                 buffer = shortBuffer(indicesCount);
                 fillShortStripIndices(stepX, stepY, (ShortBuffer) buffer);
-            }
-            else {
+            } else {
                 throw new IllegalArgumentException("too big index " + maxIndex);
             }
 
@@ -270,8 +264,7 @@ public class GeometryDataFactory {
                         buffer.put((byte) (upLineStartIndex + j));
                         buffer.put((byte) (downLineStartIndex + j));
                     }
-                }
-                else {
+                } else {
                     buffer.put((byte) (upLineStartIndex + stepX));
                     buffer.put((byte) (downLineStartIndex + stepX));
 
@@ -299,8 +292,7 @@ public class GeometryDataFactory {
                         buffer.put((short) (upLineStartIndex + j));
                         buffer.put((short) (downLineStartIndex + j));
                     }
-                }
-                else {
+                } else {
                     buffer.put((short) (upLineStartIndex + stepX));
                     buffer.put((short) (downLineStartIndex + stepX));
 
@@ -335,7 +327,7 @@ public class GeometryDataFactory {
                     buffer.put(0);             //z
 
                     buffer.put(i / (float) stepX);        //u
-                    buffer.put(j / (float) stepY);        //v
+                    buffer.put(1 - j / (float) stepY);        //v
 
                     buffer.put(0);        //nx
                     buffer.put(0);        //ny

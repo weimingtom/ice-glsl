@@ -100,6 +100,11 @@ public class Program extends SafeGlStateController implements GlRes {
     }
 
     @Override
+    public int glRes() {
+        return glProgram;
+    }
+
+    @Override
     public void release() {
     }
 
