@@ -327,7 +327,7 @@ public class GeometryDataFactory {
                     buffer.put(0);             //z
 
                     buffer.put(i / (float) stepX);        //u
-                    buffer.put(1 - j / (float) stepY);        //v
+                    buffer.put(j / (float) stepY);        //v
 
                     buffer.put(0);        //nx
                     buffer.put(0);        //ny
