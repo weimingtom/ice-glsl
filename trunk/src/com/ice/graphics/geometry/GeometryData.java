@@ -36,7 +36,8 @@ public class GeometryData {
                 for (Component component : components) {
                     if (!nameMap.containsKey(component.name)) {
                         Log.w(TAG, "transformNames " + component.name + " not in map !");
-                    } else {
+                    }
+                    else {
                         component.name = nameMap.get(component.name);
                     }
                 }
@@ -70,6 +71,16 @@ public class GeometryData {
 
         public List<Component> getComponents() {
             return components;
+        }
+
+        public Component find(String name) {
+            for (Component component : components) {
+                if (component.name.equals(name)) {
+                    return component;
+                }
+            }
+
+            return null;
         }
 
         public int getStride() {
@@ -131,6 +142,23 @@ public class GeometryData {
             this.dimension = dimension;
             this.type = type;
             this.normalized = normalized;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Component)) return false;
+
+            Component component = (Component) o;
+
+            if (name != null ? !name.equals(component.name) : component.name != null) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return name != null ? name.hashCode() : 0;
         }
 
     }
