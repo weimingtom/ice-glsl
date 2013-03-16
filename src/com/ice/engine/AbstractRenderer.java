@@ -12,7 +12,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import static android.opengl.GLES20.*;
-import static android.opengl.GLU.gluErrorString;
+import static com.ice.graphics.GlUtil.checkError;
 
 /**
  * User: jason
@@ -81,13 +81,6 @@ public abstract class AbstractRenderer implements GLSurfaceView.Renderer {
         Shader.setAttributeCapacity(attributeCapacity);
     }
 
-    private void checkError() {
-        int errorCode = glGetError();
-
-        if (errorCode != GL_NO_ERROR) {
-            throw new IllegalStateException(gluErrorString(errorCode));
-        }
-    }
 
     private class Fps {
         private int fps;

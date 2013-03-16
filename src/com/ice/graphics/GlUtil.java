@@ -3,6 +3,7 @@ package com.ice.graphics;
 import android.util.Log;
 
 import static android.opengl.GLES20.*;
+import static android.opengl.GLU.gluErrorString;
 
 /**
  * User: jason
@@ -21,6 +22,15 @@ public class GlUtil {
 
         return status;
     }
+
+    public static void checkError() {
+        int errorCode = glGetError();
+
+        if (errorCode != GL_NO_ERROR) {
+            throw new IllegalStateException(gluErrorString(errorCode));
+        }
+    }
+
 
     private static void printFboStatus(int status) {
 
