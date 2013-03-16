@@ -30,7 +30,8 @@ public class VBO extends SafeGlStateController implements GlRes {
     protected void onAttach() {
         if (!prepared) {
             prepare();
-        } else {
+        }
+        else {
             glBindBuffer(GL_ARRAY_BUFFER, glVBO);
         }
     }
@@ -42,6 +43,8 @@ public class VBO extends SafeGlStateController implements GlRes {
 
     @Override
     public void prepare() {
+        if (prepared) return;
+
         int[] temp = new int[1];
 
         glGenBuffers(1, temp, 0);
@@ -54,9 +57,11 @@ public class VBO extends SafeGlStateController implements GlRes {
 
         if (verticesData instanceof ByteBuffer) {
             bytes = BYTES_PER_BYTE;
-        } else if (verticesData instanceof IntBuffer) {
+        }
+        else if (verticesData instanceof IntBuffer) {
             bytes = BYTES_PER_INT;
-        } else if (verticesData instanceof FloatBuffer) {
+        }
+        else if (verticesData instanceof FloatBuffer) {
             bytes = BYTES_PER_FLOAT;
         }
 

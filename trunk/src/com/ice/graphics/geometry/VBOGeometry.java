@@ -54,6 +54,10 @@ public class VBOGeometry extends Geometry {
         super.unbindShaderData(data, vsh, fsh);
     }
 
+    public VBO getVbo() {
+        return vbo;
+    }
+
     @Override
     public void draw() {
         Descriptor formatDescriptor = getGeometryData().getFormatDescriptor();
