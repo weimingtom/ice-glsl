@@ -2,8 +2,7 @@ package com.ice.graphics.geometry;
 
 import android.opengl.Matrix;
 
-import static android.opengl.Matrix.perspectiveM;
-import static android.opengl.Matrix.setLookAtM;
+import static android.opengl.Matrix.*;
 import static com.ice.util.Math.IDENTITY_MATRIX_4F;
 
 /**
@@ -81,6 +80,8 @@ public class CoordinateSystem {
         public SimpleGlobal() {
             viewMatrix = new float[4 * 4];
             projectMatrix = new float[4 * 4];
+
+            setIdentityM(viewMatrix, 0);
         }
 
         public void eye(float eyeZ) {
@@ -105,6 +106,14 @@ public class CoordinateSystem {
 
         public void perspective(float fovy, float aspect, float zNear, float zFar) {
             perspectiveM(projectMatrix, 0, fovy, aspect, zNear, zFar);
+        }
+
+        public void ortho(float left, float right, float bottom, float top, float near, float far) {
+            orthoM(
+                    projectMatrix, 0,
+                    left, right, bottom, top,
+                    near, far
+            );
         }
 
         @Override
