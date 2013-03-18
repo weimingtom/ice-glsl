@@ -135,7 +135,19 @@ public abstract class Shader extends SafeGlStateController implements GlRes {
     public Uniform findUniform(String name) {
         validateProgram();
 
-        return uniforms.get(name);
+        Uniform uniform = uniforms.get(name);
+
+        if (uniform != null) return uniform;
+
+        int glUniform = glGetUniformLocation(attachedProgram.glRes(), name);
+
+        Uniform uniformNotActive = new Uniform(glUniform, name);
+
+        uniforms.put(name, uniformNotActive);
+
+        Log.w(TAG, "Found uniform " + name + " ,which is not active !");
+
+        return uniformNotActive;
     }
 
     int getGlShader() {
