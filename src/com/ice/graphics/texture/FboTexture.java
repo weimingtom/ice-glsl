@@ -11,6 +11,10 @@ public class FboTexture extends Texture {
     private int width, height;
     private int attachment = GL_COLOR_ATTACHMENT0;
 
+    private int type = GL_UNSIGNED_BYTE;
+    private int format = GL_RGBA;
+    private int internalformat = GL_RGBA;
+
     public FboTexture(int width, int height) {
         this.width = width;
         this.height = height;
@@ -22,19 +26,23 @@ public class FboTexture extends Texture {
         this.height = height;
     }
 
+    public void setDataStorage(int internalFormat, int format, int type) {
+        this.internalformat = internalFormat;
+        this.format = format;
+        this.type = type;
+    }
+
     @Override
     protected void onLoadTextureData() {
-
         glTexImage2D(
                 GL_TEXTURE_2D,
                 0,
-                GL_DEPTH_COMPONENT,
+                internalformat,
                 width, height, 0,
-                GL_DEPTH_COMPONENT,
-                GL_UNSIGNED_INT,
+                format,
+                type,
                 null
         );
-
     }
 
 }
