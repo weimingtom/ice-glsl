@@ -32,9 +32,11 @@ public abstract class AbstractRenderer implements GLSurfaceView.Renderer {
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         Log.i(TAG, "onSurfaceCreated");
 
+        GlResManager.NotifyEGLContextLost();
+
         printInfo();
 
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
         onCreated(config);
     }

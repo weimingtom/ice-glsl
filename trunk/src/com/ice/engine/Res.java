@@ -25,14 +25,24 @@ public class Res {
     }
 
     public static String assetSting(String assetFile) {
+
+        try {
+            streamString(context.getAssets().open(assetFile));
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static String streamString(InputStream is) {
         BufferedReader reader = null;
 
         try {
-            InputStream in = context.getAssets().open(assetFile);
-
             StringBuilder sb = new StringBuilder();
 
-            reader = new BufferedReader(new InputStreamReader(in));
+            reader = new BufferedReader(new InputStreamReader(is));
 
             String line = reader.readLine();
 
@@ -67,6 +77,10 @@ public class Res {
 
     public static InputStream openRaw(int rawRes) {
         return context.getResources().openRawResource(rawRes);
+    }
+
+    public static String rawShader(int rawRes) {
+        return streamString(openRaw(rawRes));
     }
 
 }

@@ -1,6 +1,6 @@
 package com.ice.graphics;
 
-import com.ice.graphics.state_controller.SafeGlStateController;
+import com.ice.graphics.state_controller.GlStateController;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -10,11 +10,10 @@ import java.nio.IntBuffer;
 import static android.opengl.GLES20.*;
 import static com.ice.model.Constants.*;
 
-public class VBO extends SafeGlStateController implements GlRes {
+public class VBO extends AutoManagedGlRes implements GlStateController {
 
-    private int glVBO;
     private int usage;
-    private boolean prepared;
+    private boolean invalidate;
     private Buffer verticesData;
 
     public VBO(Buffer data) {
@@ -27,41 +26,19 @@ public class VBO extends SafeGlStateController implements GlRes {
     }
 
     @Override
-    protected void onAttach() {
-        if (!prepared) {
-            prepare();
-        }
-        else {
-            glBindBuffer(GL_ARRAY_BUFFER, glVBO);
-        }
-    }
-
-    @Override
-    protected void onDetach() {
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
-
-    @Override
-    public void prepare() {
-        if (prepared) return;
-
+    protected int onPrepare() {
         int[] temp = new int[1];
 
         glGenBuffers(1, temp, 0);
-
-        glVBO = temp[0];
-
-        glBindBuffer(GL_ARRAY_BUFFER, glVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, temp[0]);
 
         int bytes = 0;
 
         if (verticesData instanceof ByteBuffer) {
             bytes = BYTES_PER_BYTE;
-        }
-        else if (verticesData instanceof IntBuffer) {
+        } else if (verticesData instanceof IntBuffer) {
             bytes = BYTES_PER_INT;
-        }
-        else if (verticesData instanceof FloatBuffer) {
+        } else if (verticesData instanceof FloatBuffer) {
             bytes = BYTES_PER_FLOAT;
         }
 
@@ -72,26 +49,54 @@ public class VBO extends SafeGlStateController implements GlRes {
                 usage
         );
 
-        prepared = true;
+        return temp[0];
     }
 
     @Override
-    public int glRes() {
-        return glVBO;
+    protected void onRelease(int glRes) {
+        glDeleteBuffers(1, new int[]{glRes}, 0);
+    }
+
+    public void postSubData(float[] data) {
+        if (!invalidate) {
+            verticesData.position(0);
+            ((FloatBuffer) verticesData).put(data);
+            verticesData.position(0);
+            invalidate = true;
+        }
+    }
+
+    public Buffer getVerticesData() {
+        return verticesData;
     }
 
     @Override
-    public void release() {
-        if (glIsBuffer(glVBO)) {
-            glDeleteBuffers(1, new int[]{glVBO}, 0);
+    public void attach() {
+        if (!isPrepared()) {
+            prepare();
+        } else {
+            glBindBuffer(GL_ARRAY_BUFFER, glRes());
         }
 
-        prepared = false;
+        if (invalidate) {
+            int bytes = 0;
+
+            if (verticesData instanceof ByteBuffer) {
+                bytes = BYTES_PER_BYTE;
+            } else if (verticesData instanceof IntBuffer) {
+                bytes = BYTES_PER_INT;
+            } else if (verticesData instanceof FloatBuffer) {
+                bytes = BYTES_PER_FLOAT;
+            }
+
+            glBufferSubData(GL_ARRAY_BUFFER, 0, verticesData.limit() * bytes, verticesData);
+            invalidate = false;
+        }
     }
 
     @Override
-    public void onEGLContextLost() {
-        prepared = false;
+    public void detach() {
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
 }

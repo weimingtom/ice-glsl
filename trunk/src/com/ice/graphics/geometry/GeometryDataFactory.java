@@ -1,6 +1,7 @@
 package com.ice.graphics.geometry;
 
 import android.graphics.Matrix;
+import android.graphics.Point;
 import android.graphics.PointF;
 import com.ice.graphics.shader.ShaderBinder;
 import com.ice.model.Point3F;
@@ -126,6 +127,10 @@ public class GeometryDataFactory {
     }
 
     public static IndexedGeometryData createStripGridData(float width, float height, int stepX, int stepY) {
+        return createStripGridData(width, height, stepX, stepY, new PointF(-width / 2, height / 2), new Point(1, 1));
+    }
+
+    public static IndexedGeometryData createStripGridData(float width, float height, int stepX, int stepY, PointF leftTop, Point coordinateSystem) {
         Buffer stripIndices = stripTrianglesIndices(stepX, stepY);
 
         Descriptor descriptor = new Descriptor(GL_TRIANGLE_STRIP, stripIndices.capacity());
@@ -134,7 +139,7 @@ public class GeometryDataFactory {
         descriptor.addComponent(TEXTURE_COORD, 2);
         descriptor.addComponent(NORMAL, 3);
 
-        Buffer gridVertex = new Grid(width, height, stepX, stepY).vertexs;
+        Buffer gridVertex = new Grid(width, height, stepX, stepY, leftTop, coordinateSystem).vertexs;
 
         return new IndexedGeometryData(gridVertex, stripIndices, descriptor);
     }
@@ -310,12 +315,21 @@ public class GeometryDataFactory {
         private Buffer vertexs;
 
         private Grid(float width, float height, int stepX, int stepY) {
+            this(width, height, stepX, stepY, new PointF(-width / 2, height / 2), new Point(1, 1));
+        }
+
+        private Grid(float width, float height, int stepX, int stepY, PointF leftTop, Point coordinateSystem) {
             float eachW = width / stepX;
+            if (coordinateSystem.x < 0) {
+                eachW *= -1;
+            }
+
             float eachH = -height / stepY;
+            if (coordinateSystem.y < 0) {
+                eachH *= -1;
+            }
 
             int size = (stepX + 1) * (stepY + 1) * (3 + 3 + 2);
-
-            PointF leftTop = new PointF(-width / 2, height / 2);
 
             FloatBuffer buffer = floatBuffer(size);
 
@@ -324,7 +338,7 @@ public class GeometryDataFactory {
 
                     buffer.put(leftTop.x + i * eachW);     //x
                     buffer.put(leftTop.y + j * eachH);     //y
-                    buffer.put(0);             //z
+                    buffer.put(0);                         //z
 
                     buffer.put(i / (float) stepX);        //u
                     buffer.put(j / (float) stepY);        //v

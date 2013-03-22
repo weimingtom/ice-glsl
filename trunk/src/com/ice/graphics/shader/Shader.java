@@ -17,15 +17,15 @@ package com.ice.graphics.shader;
 
 import android.util.Log;
 import com.ice.exception.FailException;
-import com.ice.graphics.GlRes;
-import com.ice.graphics.state_controller.SafeGlStateController;
+import com.ice.graphics.AutoManagedGlRes;
+import com.ice.graphics.state_controller.GlStateController;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static android.opengl.GLES20.*;
 
-public abstract class Shader extends SafeGlStateController implements GlRes {
+public abstract class Shader extends AutoManagedGlRes implements GlStateController {
     protected static int attributeCapacity = 8;
     private static final String TAG = "Shader";
 
@@ -39,8 +39,6 @@ public abstract class Shader extends SafeGlStateController implements GlRes {
     }
 
     private String shaderSrc;
-
-    private int glShader;
     protected Program attachedProgram;
     private Map<String, Uniform> uniforms;
 
@@ -53,8 +51,29 @@ public abstract class Shader extends SafeGlStateController implements GlRes {
 
         uniforms = new HashMap<String, Uniform>();
 
+        prepare();
+    }
+
+    @Override
+    public void attach() {
+        validateProgram();
+
+        if (!attachedProgram.isActive()) {
+            attachedProgram.attach();
+        }
+    }
+
+    @Override
+    public void detach() {
+        validateProgram();
+
+        attachedProgram.detach();
+    }
+
+    @Override
+    protected int onPrepare() {
         // Create the shader object
-        glShader = createGlShader();
+        int glShader = createGlShader();
 
         if (glShader == 0) {
             throw new FailException("Create shader failed !");
@@ -75,41 +94,15 @@ public abstract class Shader extends SafeGlStateController implements GlRes {
             glDeleteShader(glShader);
             throw new FailException("Compile failed ! " + log);
         }
-    }
 
-    @Override
-    public void prepare() {
-    }
-
-    @Override
-    public int glRes() {
-        return 0;
-    }
-
-    @Override
-    public void release() {
-    }
-
-    @Override
-    public void onEGLContextLost() {
+        return glShader;
     }
 
     protected abstract int createGlShader();
 
     @Override
-    protected void onAttach() {
-        validateProgram();
-
-        if (!attachedProgram.isActive()) {
-            attachedProgram.attach();
-        }
-    }
-
-    @Override
-    protected void onDetach() {
-        validateProgram();
-
-        attachedProgram.detach();
+    protected void onRelease(int glRes) {
+        //TODO
     }
 
     public void onAttachToProgram(Program attachedProgram) {
@@ -150,16 +143,12 @@ public abstract class Shader extends SafeGlStateController implements GlRes {
         return uniformNotActive;
     }
 
-    int getGlShader() {
-        return glShader;
-    }
-
     private void initUniforms() {
         uniforms.clear();
 
         int[] activeUniformSize = new int[1];
 
-        int glProgram = attachedProgram.getGlProgram();
+        int glProgram = attachedProgram.glRes();
 
         glGetProgramiv(glProgram, GL_ACTIVE_UNIFORMS, activeUniformSize, 0);
 

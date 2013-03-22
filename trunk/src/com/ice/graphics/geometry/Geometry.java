@@ -2,14 +2,14 @@ package com.ice.graphics.geometry;
 
 import com.ice.graphics.shader.FragmentShader;
 import com.ice.graphics.shader.VertexShader;
-import com.ice.graphics.state_controller.SafeGlStateController;
+import com.ice.graphics.state_controller.GlStateController;
 import com.ice.graphics.texture.Texture;
 
 /**
  * User: jason
  * Date: 13-2-16
  */
-public abstract class Geometry extends SafeGlStateController {
+public abstract class Geometry implements GlStateController {
 
     public interface Binder {
 
@@ -43,8 +43,7 @@ public abstract class Geometry extends SafeGlStateController {
     }
 
     @Override
-    protected void onAttach() {
-
+    public void attach() {
         vertexShader.attach();
 
         if (texture != null) {
@@ -52,11 +51,10 @@ public abstract class Geometry extends SafeGlStateController {
         }
 
         bindShaderData(geometryData, vertexShader, fragmentShader);
-
     }
 
     @Override
-    protected void onDetach() {
+    public void detach() {
         unbindShaderData(geometryData, vertexShader, fragmentShader);
 
         if (texture != null) {

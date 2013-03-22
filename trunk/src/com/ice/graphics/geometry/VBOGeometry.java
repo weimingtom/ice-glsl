@@ -1,6 +1,5 @@
 package com.ice.graphics.geometry;
 
-import android.util.Log;
 import com.ice.graphics.VBO;
 import com.ice.graphics.shader.Attribute;
 import com.ice.graphics.shader.FragmentShader;
@@ -87,9 +86,9 @@ public class VBOGeometry extends Geometry {
                 if (attribute == null) {
                     error = true;
 
-                    if (!errorPrinted) {
-                        Log.e(TAG, "attribute " + component.name + " not found in vertex shader ");
-                    }
+//                    if (!errorPrinted) {
+//                        Log.e(TAG, "attribute " + component.name + " not found in vertex shader ");
+//                    }
 
                 }
                 else {
