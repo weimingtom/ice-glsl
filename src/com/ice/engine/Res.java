@@ -27,9 +27,8 @@ public class Res {
     public static String assetSting(String assetFile) {
 
         try {
-            streamString(context.getAssets().open(assetFile));
-        }
-        catch (IOException e) {
+            return streamString(context.getAssets().open(assetFile));
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -53,16 +52,13 @@ public class Res {
 
             return sb.toString();
 
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             if (reader != null) {
                 try {
                     reader.close();
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
