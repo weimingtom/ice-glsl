@@ -1,61 +1,39 @@
 package com.ice.graphics;
 
 import android.opengl.GLES20;
-import com.ice.graphics.state_controller.SafeGlStateController;
+import com.ice.graphics.state_controller.GlStateController;
 
-import static android.opengl.GLES20.GL_FRAMEBUFFER;
-import static android.opengl.GLES20.glBindFramebuffer;
-import static android.opengl.GLES20.glDeleteFramebuffers;
+import static android.opengl.GLES20.*;
 
 /**
  * User: jason
  * Date: 13-3-14
  */
-public class FBO extends SafeGlStateController implements GlRes {
-
-    private int glFBO;
-    private boolean prepared;
+public class FBO extends AutoManagedGlRes implements GlStateController {
 
     @Override
-    public void prepare() {
-        if (!prepared) {
-            int[] temp = new int[1];
-            GLES20.glGenFramebuffers(temp.length, temp, 0);
-            glFBO = temp[0];
-            prepared = true;
-        }
+    protected int onPrepare() {
+        int[] temp = new int[1];
+        GLES20.glGenFramebuffers(temp.length, temp, 0);
+        return temp[0];
     }
 
     @Override
-    public int glRes() {
-        return glFBO;
+    protected void onRelease(int glRes) {
+        glDeleteFramebuffers(1, new int[]{glRes}, 0);
     }
 
     @Override
-    public void release() {
-        if (prepared) {
-            int[] temp = new int[]{glFBO};
-            glDeleteFramebuffers(temp.length, temp, 0);
-            prepared = false;
-        }
-    }
-
-    @Override
-    public void onEGLContextLost() {
-        prepared = false;
-        glFBO = 0;
-    }
-
-    @Override
-    protected void onAttach() {
-        if (!prepared)
+    public void attach() {
+        if (!isPrepared()) {
             prepare();
+        }
 
-        glBindFramebuffer(GL_FRAMEBUFFER, glFBO);
+        glBindFramebuffer(GL_FRAMEBUFFER, glRes());
     }
 
     @Override
-    protected void onDetach() {
+    public void detach() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 

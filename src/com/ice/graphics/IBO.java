@@ -1,7 +1,7 @@
 package com.ice.graphics;
 
 import android.util.Log;
-import com.ice.graphics.state_controller.SafeGlStateController;
+import com.ice.graphics.state_controller.GlStateController;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -16,13 +16,11 @@ import static javax.microedition.khronos.opengles.GL11.GL_STATIC_DRAW;
  * User: jason
  * Date: 13-2-16
  */
-public class IBO extends SafeGlStateController implements GlRes {
+public class IBO extends AutoManagedGlRes implements GlStateController {
 
     private static final String TAG = "IBO";
 
-    private int glIBO;
     private int usage;
-    private boolean prepared;
     private Buffer indicesData;
 
     private final int size;
@@ -56,51 +54,32 @@ public class IBO extends SafeGlStateController implements GlRes {
     }
 
     @Override
-    protected void onAttach() {
-        if (!prepared) {
+    protected int onPrepare() {
+        int[] temp = new int[1];
+        glGenBuffers(1, temp, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, temp[0]);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indicesData, usage);
+        return temp[0];
+    }
+
+    @Override
+    protected void onRelease(int glRes) {
+        glDeleteBuffers(1, new int[]{glRes}, 0);
+    }
+
+    @Override
+    public void attach() {
+        if (!isPrepared()) {
             prepare();
         }
         else {
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glIBO);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glRes());
         }
     }
 
     @Override
-    protected void onDetach() {
+    public void detach() {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    }
-
-    @Override
-    public void prepare() {
-        int[] temp = new int[1];
-
-        glGenBuffers(1, temp, 0);
-
-        glIBO = temp[0];
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glIBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indicesData, usage);
-
-        prepared = true;
-    }
-
-    @Override
-    public int glRes() {
-        return glIBO;
-    }
-
-    @Override
-    public void release() {
-        if (glIsBuffer(glIBO)) {
-            glDeleteBuffers(1, new int[]{glIBO}, 0);
-        }
-
-        prepared = false;
-    }
-
-    @Override
-    public void onEGLContextLost() {
-        prepared = false;
     }
 
 }

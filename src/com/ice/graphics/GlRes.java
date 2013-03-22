@@ -7,6 +7,7 @@ package com.ice.graphics;
  * Time: 下午3:26
  */
 public interface GlRes {
+    public static final int NULL = -1;
 
     void prepare();
 

@@ -1,8 +1,8 @@
 package com.ice.graphics.shader;
 
 import com.ice.exception.FailException;
-import com.ice.graphics.GlRes;
-import com.ice.graphics.state_controller.SafeGlStateController;
+import com.ice.graphics.AutoManagedGlRes;
+import com.ice.graphics.state_controller.GlStateController;
 
 import static android.opengl.GLES20.*;
 
@@ -10,31 +10,23 @@ import static android.opengl.GLES20.*;
  * User: jason
  * Date: 13-2-5
  */
-public class Program extends SafeGlStateController implements GlRes {
+public class Program extends AutoManagedGlRes implements GlStateController {
 
     public static Program using;
 
-    private int glProgram;
     private boolean linked;
     private VertexShader vsh;
     private FragmentShader fsh;
 
     public Program() {
-        // Create the attachedProgram object
-        glProgram = glCreateProgram();
-
-        if (glProgram == 0) {
-            throw new FailException("Create attachedProgram failed !");
-        }
-    }
-
-    int getGlProgram() {
-        return glProgram;
+        prepare();
     }
 
     public void attachShader(VertexShader vsh, FragmentShader fsh) {
-        glAttachShader(glProgram, vsh.getGlShader());
-        glAttachShader(glProgram, fsh.getGlShader());
+        int glProgram = glRes();
+
+        glAttachShader(glProgram, vsh.glRes());
+        glAttachShader(glProgram, fsh.glRes());
 
         this.vsh = vsh;
         this.fsh = fsh;
@@ -53,6 +45,8 @@ public class Program extends SafeGlStateController implements GlRes {
 
     public void link() {
         // Link the attachedProgram
+        int glProgram = glRes();
+
         glLinkProgram(glProgram);
 
         // Check the link status
@@ -66,8 +60,8 @@ public class Program extends SafeGlStateController implements GlRes {
         }
 
         // Free up no longer needed shader resources
-        glDeleteShader(vsh.getGlShader());
-        glDeleteShader(fsh.getGlShader());
+        glDeleteShader(vsh.glRes());
+        glDeleteShader(fsh.glRes());
 
         vsh.onProgramLinked(this);
         fsh.onProgramLinked(this);
@@ -80,27 +74,13 @@ public class Program extends SafeGlStateController implements GlRes {
     }
 
     @Override
-    protected void onAttach() {
-        if (vsh == null || fsh == null) {
-            throw new IllegalStateException();
+    protected int onPrepare() {
+        int glProgram = glCreateProgram();
+
+        if (glProgram == 0) {
+            throw new FailException("Create attachedProgram failed !");
         }
 
-        glUseProgram(glProgram);
-
-        using = this;
-    }
-
-    @Override
-    protected void onDetach() {
-        glUseProgram(0);
-    }
-
-    @Override
-    public void prepare() {
-    }
-
-    @Override
-    public int glRes() {
         return glProgram;
     }
 
@@ -109,12 +89,28 @@ public class Program extends SafeGlStateController implements GlRes {
     }
 
     @Override
-    public void onEGLContextLost() {
-        glProgram = 0;
+    protected void onRelease(int glRes) {
+        //TODO
     }
 
     public boolean isActive() {
         return this == using;
+    }
+
+    @Override
+    public void attach() {
+        if (vsh == null || fsh == null) {
+            throw new IllegalStateException();
+        }
+
+        glUseProgram(glRes());
+
+        using = this;
+    }
+
+    @Override
+    public void detach() {
+        glUseProgram(0);
     }
 
 }

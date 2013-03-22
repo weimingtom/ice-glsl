@@ -39,7 +39,7 @@ public class VertexShader extends Shader {
 
         int[] activeAttributeSize = new int[1];
 
-        int glProgram = attachedProgram.getGlProgram();
+        int glProgram = attachedProgram.glRes();
 
         glGetProgramiv(glProgram, GL_ACTIVE_ATTRIBUTES, activeAttributeSize, 0);
 
@@ -70,7 +70,7 @@ public class VertexShader extends Shader {
             throw new IllegalStateException("Too many attribute bound ! while attribute capacity is " + attributeCapacity);
         }
 
-        int glProgram = attachedProgram.getGlProgram();
+        int glProgram = attachedProgram.glRes();
 
         for (Map.Entry<String, Integer> entry : preBindAttributes.entrySet()) {
             String attributeName = entry.getKey();

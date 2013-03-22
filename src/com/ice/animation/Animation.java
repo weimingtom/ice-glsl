@@ -3,11 +3,13 @@ package com.ice.animation;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
-import com.ice.graphics.state_controller.SafeGlStateController;
+import android.view.animation.LinearInterpolator;
+import com.ice.graphics.state_controller.GlStateController;
 
-public abstract class Animation extends SafeGlStateController {
+public abstract class Animation implements GlStateController {
+    public static final AccelerateDecelerateInterpolator ACCELERATE_DECELERATE_INTERPOLATOR = new AccelerateDecelerateInterpolator();
+    public static final LinearInterpolator LINEAR_INTERPOLATOR = new LinearInterpolator();
 
-    public static final int FOREVER = Integer.MIN_VALUE;
     private static final long NOT_STARTED = 0;
 
     public interface Listener {
@@ -15,7 +17,7 @@ public abstract class Animation extends SafeGlStateController {
     }
 
     public Animation() {
-        interpolator = new AccelerateDecelerateInterpolator();
+        interpolator = ACCELERATE_DECELERATE_INTERPOLATOR;
         startTime = NOT_STARTED;
     }
 
@@ -39,7 +41,10 @@ public abstract class Animation extends SafeGlStateController {
     }
 
     @Override
-    protected void onAttach() {
+    public void attach() {
+
+        if (cancel || finished) return;
+
         if (startTime == NOT_STARTED)
             start();
 
@@ -48,48 +53,41 @@ public abstract class Animation extends SafeGlStateController {
         if (currentTime - startTime < offset)
             return;
 
-        boolean over = currentTime - (startTime + offset) > duration;
+        float normalizedTime = 1.0f;
 
-        if (over) {
-            if (loopTimes > 0) {
-                start();
-                loopTimes--;
-            } else if (loopTimes == FOREVER) {
-                start();
-            } else {
-                finished = true;
-            }
+        if (duration != 0) {
+            normalizedTime = (currentTime - startTime - offset) / (float) duration;
+            normalizedTime = Math.min(normalizedTime, 1.0f);
         }
 
-        float normalizedTime = 0;
-
-        if (over) {
-            normalizedTime = 1.0f;
-        } else {
-            if (duration != 0 && currentTime >= startTime + offset) {
-                normalizedTime = ((float) (currentTime - startTime - offset)) / (float) duration;
-            }
-        }
-
-        //根据归一化时间调整时间插值
-        float interpolatedTime = interpolator.getInterpolation(normalizedTime);
-
-        onAttach(interpolatedTime);
+        onAttach(interpolator.getInterpolation(normalizedTime));
 
         attached = true;
     }
 
     @Override
-    protected void onDetach() {
+    public void detach() {
         if (attached) {
-            //todo
+            onDetach();
             attached = false;
         }
 
-        if (isCompleted()) {
-            onComplete();
+        if (cancel || finished) return;
+
+        long currentTime = AnimationUtils.currentAnimationTimeMillis();
+        boolean over = currentTime - (startTime + offset) >= duration;
+
+        try {
+            if (over) {
+                if (!cancel) {
+                    onComplete();
+                }
+            }
+        } finally {
+            finished = over;
         }
     }
+
 
     public void onComplete() {
 
@@ -106,6 +104,10 @@ public abstract class Animation extends SafeGlStateController {
 
     protected abstract void onAttach(float interpolatedTime);
 
+    protected void onDetach() {
+
+    }
+
     public long getDuration() {
         return duration;
     }
@@ -113,6 +115,7 @@ public abstract class Animation extends SafeGlStateController {
     public boolean isCompleted() {
         return finished;
     }
+
 
     public Listener getListener() {
         return listener;
@@ -124,10 +127,6 @@ public abstract class Animation extends SafeGlStateController {
 
     public void setInterpolator(Interpolator interpolator) {
         this.interpolator = interpolator;
-    }
-
-    public void setLoopTimes(int loopTimes) {
-        this.loopTimes = loopTimes;
     }
 
     public boolean isCanceled() {
@@ -160,8 +159,6 @@ public abstract class Animation extends SafeGlStateController {
 
     protected long startTime;
     protected long duration;
-
-    protected int loopTimes;
 
     private boolean cancel;
 
