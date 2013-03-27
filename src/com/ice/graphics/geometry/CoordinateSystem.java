@@ -1,9 +1,9 @@
 package com.ice.graphics.geometry;
 
 import android.opengl.Matrix;
+import com.ice.util.MathUtil;
 
 import static android.opengl.Matrix.*;
-import static com.ice.util.Math.IDENTITY_MATRIX_4F;
 
 /**
  * User: jason
@@ -36,7 +36,7 @@ public class CoordinateSystem {
     public CoordinateSystem() {
         modelMatrix = new float[4 * 4];
 
-        System.arraycopy(IDENTITY_MATRIX_4F, 0, modelMatrix, 0, modelMatrix.length);
+        MathUtil.setIdentity(modelMatrix);
     }
 
     public float[] modelMatrix() {
@@ -101,7 +101,15 @@ public class CoordinateSystem {
                     centerX, centerY, centerZ,
                     upX, upY, upZ
             );
+        }
 
+        public void frustum(float left, float top, float near, float far) {
+            frustum(left, -left, -top, top, near, far);
+        }
+
+        public void frustum(float left, float right, float bottom, float top,
+                            float near, float far) {
+            frustumM(projectMatrix, 0, left, right, bottom, top, near, far);
         }
 
         public void perspective(float fovy, float aspect, float zNear, float zFar) {
