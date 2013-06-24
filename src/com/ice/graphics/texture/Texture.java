@@ -44,29 +44,42 @@ public abstract class Texture extends AutoManagedGlRes implements GlStateControl
         private Map<Integer, Integer> paramMap;
     }
 
+    private int target;
     private Params params;
 
     public Texture() {
         this(Params.LINEAR_CLAMP_TO_EDGE);
     }
 
+    public Texture(int target) {
+        this(target, Params.LINEAR_CLAMP_TO_EDGE);
+    }
+
     public Texture(Params params) {
+        this(GL_TEXTURE_2D, params);
+    }
+
+    public Texture(int target, Params params) {
+        this.target = target;
         this.params = params;
+    }
+
+    public int getTarget() {
+        return target;
     }
 
     @Override
     public void attach() {
         if (!isPrepared()) {
             prepare();
-        }
-        else {
-            glBindTexture(GL_TEXTURE_2D, glRes());
+        } else {
+            glBindTexture(target, glRes());
         }
     }
 
     @Override
     public void detach() {
-        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindTexture(target, 0);
     }
 
     @Override
@@ -77,7 +90,7 @@ public abstract class Texture extends AutoManagedGlRes implements GlStateControl
 
         int glTexture = temp[0];
 
-        glBindTexture(GL_TEXTURE_2D, glTexture);
+        glBindTexture(target, glTexture);
 
         /*
          * Always set any texture parameters before loading texture data,
@@ -101,7 +114,7 @@ public abstract class Texture extends AutoManagedGlRes implements GlStateControl
     private void bindTextureParams(Params params) {
         for (Map.Entry<Integer, Integer> entry : params.getParamMap().entrySet()) {
             glTexParameterf(
-                    GL_TEXTURE_2D,
+                    target,
                     entry.getKey(),
                     entry.getValue()
             );
