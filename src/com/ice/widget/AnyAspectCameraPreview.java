@@ -48,7 +48,7 @@ public class AnyAspectCameraPreview extends GLSurfaceView {
     }
 
     public interface PreviewTexturePreparedListener {
-        void onPreviewTexturePrepared(SurfaceTexture previewTexture);
+        void onPreviewTexturePrepared(AnyAspectCameraPreview preview, SurfaceTexture previewTexture);
     }
 
     private boolean frontFace;
@@ -78,7 +78,7 @@ public class AnyAspectCameraPreview extends GLSurfaceView {
     public void setPreviewTexturePreparedListener(PreviewTexturePreparedListener listener) {
         this.previewTexturePreparedListener = listener;
         if (previewTexture != null) {
-            previewTexturePreparedListener.onPreviewTexturePrepared(previewTexture);
+            previewTexturePreparedListener.onPreviewTexturePrepared(this, previewTexture);
         }
     }
 
@@ -152,7 +152,8 @@ public class AnyAspectCameraPreview extends GLSurfaceView {
             texture.prepare();
 
             previewTexture = new SurfaceTexture(texture.glRes());
-            previewTexturePreparedListener.onPreviewTexturePrepared(previewTexture);
+            previewTexturePreparedListener.
+                    onPreviewTexturePrepared(AnyAspectCameraPreview.this, previewTexture);
         }
 
         @Override
