@@ -1,7 +1,10 @@
 package com.ice.widget;
 
 import android.content.Context;
-import android.graphics.*;
+import android.graphics.Point;
+import android.graphics.PointF;
+import android.graphics.RectF;
+import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
@@ -29,7 +32,7 @@ import static com.ice.graphics.geometry.CoordinateSystem.M_V_P_MATRIX;
 /**
  * User: jason
  */
-public class AnyAspectCameraPreview extends GLSurfaceView {
+public class AnyAspectCameraPreview extends GLSurfaceView implements CameraProxy.Listener {
 
     private static final String TAG = "AnyAspectCameraPreview";
 
@@ -68,7 +71,11 @@ public class AnyAspectCameraPreview extends GLSurfaceView {
 
     private void init() {
         setEGLContextClientVersion(2);
-        setRenderer(renderer = new CameraRenderer());
+        setRenderer(renderer = onCreateRenderer());
+    }
+
+    protected CameraRenderer onCreateRenderer() {
+        return new CameraRenderer();
     }
 
     public SurfaceTexture getPreviewTexture() {
@@ -82,12 +89,12 @@ public class AnyAspectCameraPreview extends GLSurfaceView {
         }
     }
 
-    public void setFrontFace(boolean frontFace) {
-        this.frontFace = frontFace;
-    }
 
-    public void setCameraPreviewSize(int cameraPreviewWidth, int cameraPreviewHeight) {
-        cameraPreviewBounds = new Rect(0, 0, cameraPreviewWidth, cameraPreviewHeight);
+    @Override
+    public void onCameraOpened(boolean frontFace, Point previewSize) {
+        this.frontFace = frontFace;
+
+        cameraPreviewSize = new PointF(previewSize);
         textureCrop = null;
 
         updateRotation();
@@ -101,34 +108,34 @@ public class AnyAspectCameraPreview extends GLSurfaceView {
         PointF srcTextureSize = new PointF();
 
         float displayAspect = displaySize.y / displaySize.x;
-        float previewAspect = cameraPreviewBounds.height() / (float) cameraPreviewBounds.width();
+        float previewAspect = cameraPreviewSize.y / cameraPreviewSize.x;
 
         if (displayAspect > previewAspect) {
-            srcTextureSize.y = cameraPreviewBounds.height();
+            srcTextureSize.y = cameraPreviewSize.y;
             srcTextureSize.x = srcTextureSize.y / displayAspect;
         } else {
-            srcTextureSize.x = cameraPreviewBounds.width();
+            srcTextureSize.x = cameraPreviewSize.x;
             srcTextureSize.y = srcTextureSize.x * displayAspect;
         }
 
         RectF cropBounds = new RectF(0, 0, srcTextureSize.x, srcTextureSize.y);
         cropBounds.offset(
-                (cameraPreviewBounds.width() - cropBounds.width()) / 2,
-                (cameraPreviewBounds.height() - cropBounds.height()) / 2
+                (cameraPreviewSize.x - cropBounds.width()) / 2,
+                (cameraPreviewSize.y - cropBounds.height()) / 2
         );
 
         textureCrop = new float[4];
-        textureCrop[0] = cropBounds.left / cameraPreviewBounds.width();
-        textureCrop[1] = cropBounds.right / cameraPreviewBounds.width();
-        textureCrop[2] = cropBounds.top / cameraPreviewBounds.height();
-        textureCrop[3] = cropBounds.bottom / cameraPreviewBounds.height();
+        textureCrop[0] = cropBounds.left / cameraPreviewSize.x;
+        textureCrop[1] = cropBounds.right / cameraPreviewSize.x;
+        textureCrop[2] = cropBounds.top / cameraPreviewSize.y;
+        textureCrop[3] = cropBounds.bottom / cameraPreviewSize.y;
 
         for (float v : textureCrop) {
             Log.d(TAG, "textureCrop " + v);
         }
     }
 
-    private class CameraRenderer extends AbstractRenderer {
+    protected class CameraRenderer extends AbstractRenderer {
         Texture texture;
         Program program;
         Point viewSize;
@@ -252,7 +259,7 @@ public class AnyAspectCameraPreview extends GLSurfaceView {
         }
 
         private boolean allInfoOk() {
-            return cameraPreviewBounds != null;
+            return cameraPreviewSize != null;
         }
 
         private void updateShaderParams() {
@@ -303,7 +310,7 @@ public class AnyAspectCameraPreview extends GLSurfaceView {
     private SurfaceTexture previewTexture;
     private Geometry panel;
     private PointF displaySize;
-    private Rect cameraPreviewBounds;
+    private PointF cameraPreviewSize;
     private float[] textureCrop;
 
     private static final String VERTEX_SRC = "#version 120\n" +
