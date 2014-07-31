@@ -17,8 +17,6 @@ import static com.ice.graphics.geometry.GeometryData.Descriptor;
  */
 public class VBOGeometry extends Geometry {
 
-    private static final String TAG = "VBOGeometry";
-
     private VBO vbo;
 
     public VBOGeometry(GeometryData data) {
